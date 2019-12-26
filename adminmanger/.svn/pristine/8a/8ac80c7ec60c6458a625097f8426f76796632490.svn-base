@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>订单管理</title>
+    <link rel="stylesheet" href="../plugins/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+
+<body>
+<div class="main">
+    <blockquote class="layui-elem-quote">订单管理列表</blockquote>
+    <div class="layui-card">
+        <div class="layui-card-header layuiadmin-card-header-auto">
+			<form class="layui-form" action="">
+				<div class="layui-form-item layui-inline">
+				  <label class="layui-form-label">搜索条件：</label>
+				  <div class="layui-input-inline">
+					 <input type="text" class="layui-input" name="searchKey" placeholder="订单号/收货人手机号" />
+				  </div>
+				</div>				
+				<div class="layui-form-item layui-inline">
+				    <label class="layui-form-label">下单时间：</label>
+				    <div class="layui-input-inline">
+						<input type="text" class="layui-input" id="selectTime" placeholder="~">
+				    </div>
+				</div>
+				<div class="layui-form-item layui-inline select-but">
+					<button class="layui-btn selectBut" lay-submit lay-filter="searchBth" type="button">查询</button>
+				</div>
+			</form>
+		</div>
+		<div class="layui-card-body">
+		    <!--表单 start-->
+			<div class="layui-tab layui-tab-card" lay-filter="stateType">
+				<ul class="layui-tab-title">
+					<li class="layui-this">全部</li>
+					<li>待处理</li>
+					<li>已发货</li>
+					<li>已完成</li>
+				</ul>
+				<div class="layui-tab-content">
+					<div class="layui-tab-item layui-show">
+						<table class="layui-hide" id="selectList" lay-filter="layTable"></table>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../plugins/layui/layui.js"></script>
+<script type="text/javascript" src="../js/auth.js"></script>
+<script>
+	
+	// 按钮权限
+	if(getAuth('订单管理','查询')){ $('.selectBut').show() }else{ $('.selectBut').hide() }
+	var infoAuth = getAuth('订单管理','查看详情')
+	
+	layui.config({
+	    base: '../plugins/layui/modules/'
+	});
+	
+	layui.use(['layer', 'form', 'http', 'common','laydate','table','element'], function () {
+	    var layer = layui.layer,
+	        http = layui.http,
+	        form = layui.form,
+	        common = layui.common,
+			laydate = layui.laydate,
+			element = layui.element,
+			table = layui.table;
+			
+			//日期范围
+		    laydate.render({
+				elem: '#selectTime'
+				,range: '~'
+		    });
+			
+			var params = {};
+			
+			//列表查询
+			var selectTable;
+			selectTable = http.table({
+				elem: '#selectList',
+				url: 'admin/order/listPage',
+				type: 'get',
+				id: 'selectTable',
+				cols: [[
+				   { title : '序号', align : 'center', width : 80, templet : function(d) { return d.LAY_INDEX } }
+				  ,{field:'orderCreateTime', title: '下单时间', align : 'center',width: 180}
+				  ,{field:'groupId', title: '订单编号', align : 'center',width: 200}
+				  ,{field:'userAccount', title: '用户', align : 'center',width: 120}
+				  ,{field:'userRoleName', title: '用户角色', align : 'center'}
+				  ,{field:'payAble', title: '实付金额', align : 'center'}
+				  ,{field:'recUserName', title: '收货人姓名', align : 'center'}
+				  ,{field:'recAddress', title: '收货人地址', align : 'center'}
+				  ,{field:'recTelephone', title: '收货人手机号', align : 'center',width: 120}
+				  ,{field:'roleName', title: '状态', align : 'center',
+						templet : function(obj) {
+							  if(obj.orderState==1)
+								  return '待付款';
+							  if(obj.orderState==2)
+								  return '待处理';
+							  if(obj.orderState==3)
+								  return '已发货';
+							  if(obj.orderState==4)
+								  return '已完成';//已收货
+							  if(obj.orderState==5)
+								  return '已取消';
+						  }		
+				  }
+				  ,{field:'', title: '操作', align : 'center',fixed: 'right',width: 150,
+						templet: function (d) {
+							var html = '';
+							if(infoAuth)
+								html += '<a class="buttoncolorOne" lay-event="info" >查看详情</a>'
+							return html;
+						}
+				  }
+				]],
+				page: true
+			});
+			
+			//操作
+			table.on('tool(layTable)', function(obj){
+				var data = obj.data;
+				if(obj.event=='info'){
+					//待处理订单详情
+					if(data.orderState==2){
+						window.location.href="order_stay.html?id="+data.groupId;
+					}
+					//已发货订单详情
+					if(data.orderState==3){
+						window.location.href="order_hair.html?id="+data.groupId;
+					}
+					//已完成订单详情
+					if(data.orderState==4){
+						window.location.href="order_end.html?id="+data.groupId;
+					}
+					//待付款/已取消订单
+					if(data.orderState==1 || data.orderState==5){
+						window.location.href="order_com.html?id="+data.groupId;
+					}
+					
+				}
+			});
+			
+			//查询
+			form.on('submit(searchBth)', function (data) {
+				let _data = data.field;
+				param = _data;
+				var startTime = $('#selectTime').val()?$('#selectTime').val().split(' ~ ')[0]:'';
+				var endTime = $('#selectTime').val()?$('#selectTime').val().split(' ~ ')[1]:'';
+				param.startTime = startTime;
+				param.endTime = endTime;
+				selectTable.reload({
+					page:{curr:1},
+					where: param
+				})
+			})
+			
+			//监听Tab状态
+			element.on('tab(stateType)', function(data){	
+				if(data.index==1){
+					params.orderState = 2;
+				}else if(data.index==2){
+					params.orderState = 3;
+				}else if(data.index==3){
+					params.orderState = 4;
+				}else{
+					params.orderState = '';
+				}
+				selectTable.reload({
+					page:{curr:1},
+					where: params
+				})
+			});
+    })
+</script>
+</body>
+
+</html>

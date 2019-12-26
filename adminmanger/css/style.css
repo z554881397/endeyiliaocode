@@ -1,0 +1,105 @@
+.maincontainer {
+  padding: 10px;
+  /* background: #f2f2f2; */
+}
+
+/* blockquote start */
+.layui-elem-quote .btnright {
+  float: right;
+  margin-left: 10px;
+}
+
+.btn-blockquote {
+  position: relative;
+  bottom: 4px;
+}
+
+/* blockquote end */
+
+/* 搜索区 start */
+.layui-card-header.layuiadmin-card-header-auto {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  height: auto;
+}
+
+.layuiadmin-card-header-auto .layui-form-item:last-child {
+  margin-bottom: 0;
+}
+
+.layuiadmin-card-header-auto .layui-form-item .layui-inline {
+  margin: 0;
+}
+
+.layuiadmin-card-header-auto .layui-form-item .layui-inline .layui-btn {
+  margin-top: -3px;
+}
+
+/* 搜索区 end */
+
+/* 表格操作按钮 start */
+a.buttoncolor {
+  color: #1e9fff;
+  margin-right: 15px;
+  cursor: pointer;
+}
+
+a.redButton {
+  color: #F56C6C;
+  margin-right: 15px;
+  cursor: pointer;
+}
+
+/* 表格操作按钮 end */
+
+/* 弹出框 start */
+.layui-layer-molv .layui-layer-title {
+  background: #409EFF !important;
+}
+
+.layui-layer-molv .layui-layer-btn a:nth-of-type(1) {
+  border-color: #409EFF !important;
+  background-color: #409EFF !important;
+  color: #fff;
+}
+
+.layui-layer-molv .layui-layer-btn a {
+  border-color: #e6e6e6 !important;
+  background-color: #fff !important;
+  color: #555;
+}
+
+
+/* .layui-layer-setwin .layui-layer-close1 {
+  color: #000;
+  font-size: 16px;
+} */
+
+.layui-layer-setwin .layui-layer-close2 {
+  position: absolute;
+  right: -20px !important;
+  top: -19px !important;
+  width: 20px !important;
+  height: 20px !important;
+  margin-left: 0;
+  background-position: -149px -31px;
+  border-radius: 50% !important;
+  border: 1px solid #fff !important;
+  background-color: rgb(95, 89, 89);
+}
+
+.layui-layer-setwin a {
+  color: #fff;
+  font-size: 20px !important;
+}
+
+.layui-layer-btn {
+  text-align: center !important;
+}
+
+.dialogForm {
+  display: none;
+  padding: 20px 15px 0 0;
+}
+
+/* 弹出框 end */

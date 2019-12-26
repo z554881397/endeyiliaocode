@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>查看商品</title>
+    <link rel="stylesheet" href="../plugins/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../css/main.css">
+	<link type="text/css" rel="stylesheet" href="../css/font-awesome.min.css"/>
+</head>
+<style>
+	/* 商品规格 */
+	.addrule {
+	    width: 100%;
+	    padding: 10px;
+	    border: 1px solid #f2f2f2;
+	    box-sizing: border-box;
+	    font-size: 12px;
+	}
+	
+	.addrule .layui-input {
+	    height: 30px;
+	    line-height: 30px;
+	}
+	
+	.specificationDiv {
+	    overflow: hidden;
+	}
+	
+	.el {
+	    width: 100%;
+	    background: #f8f8f8;
+	    padding: 8px;
+	    box-sizing: border-box;
+	}
+	
+	.addSpecificationVal {
+	    height: 30px;
+	    display: flex;
+	    align-items: center;
+	    cursor: pointer;
+	    color: #1E9FFF;
+	}
+	
+	.inputListTab {
+	    /* display: flex; */
+	}
+	
+	.addlistf {
+	    background: #f8f8f8;
+	    padding: 8px 0;
+	    float: left;
+	    width: 100%;
+	    margin: 10px 0;
+	    position: relative;
+	}
+	
+	.layui-input-inline {
+	    position: relative;
+	}
+	
+	.close {
+	    position: absolute;
+	    top: -8px;
+	    right: -8px;
+	    font-size: 20px;
+	    opacity: 0.2;
+	}
+	
+	.addlistf .close {
+	    top: 10px;
+	    right: 15px;
+	
+	}
+	
+	.close:hover {
+	    opacity: 1;
+	    color: rgb(216, 74, 74);
+	}
+	
+	.inputListTab {
+	    float: left;
+	    width: 100%;
+	    margin: 10px 0;
+	}
+	.addcheckbox{
+		width: 20px!important;
+		margin-left: 15px;
+	}
+	.layui-form-item .layui-form-checkbox[lay-skin=primary] {
+	    margin-top:4px;
+	}
+	.Bigaddtab{
+		height:40px;
+		float: left;
+	}
+	/* 图片 */
+	.imgList {
+		width: 1000px;
+		min-width: 150px;
+		min-height: 150px;
+	}
+	
+	.addImg {
+		width: 100px;
+		height: 30px;
+		border-radius: 4px;
+		border: 1px dashed #e6e6e6;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		color: #666;
+		font-size: 12px;
+		margin-top:18px;
+	}
+	
+	.addImg:hover {
+		border: 1px dashed #1e9fff;
+		background: #1e9fff;
+		color: #fff;
+	}
+	
+	.addImg:hover i {
+		color: #fff;
+	}
+	
+	.addImg i {
+		font-size: 14px;
+		color: #009688;
+		margin-right: 5px;
+	}
+	
+	.mainpicture {
+		min-height: 100px;
+		/* overflow: hidden; */
+		margin: 15px 0;
+	}
+	
+	.mainpicture > li {
+		/* width: 150px;
+		height: 150px; */
+		float: left;
+		margin-right: 10px;
+		background: #fff;
+		position: relative;
+		/*background: #5a8bff;*/
+	}
+	
+	.mainpicture > li > img {
+		height: 150px;
+		width: 150px;
+		margin-left:10px;
+	}
+	
+	.mainpicture > li > .layui-icon-close-fill {
+		position: absolute;
+		right: 0;
+	}
+	
+	.delImg {
+		position: absolute;
+		right: 0;
+		font-size: 20px;
+		color: red;
+		opacity: 0.7;
+	}
+	.nullimg {
+		width: 150px;
+		height: 150px;
+		border: 1px dashed #ddd;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		box-sizing: border-box;
+	}
+	
+	.nullimg > div {
+		text-align: center;
+		color: #ddd;
+	}
+	
+	.nullimg > div > i {
+		text-align: center;
+		font-size: 30px;
+	}
+	
+	.showDImg {
+		display: none;
+	}
+	.mainpicture .showDImg {
+		width: 700px;
+		height: auto;
+	}
+	
+	.mainpicture .showDImg {
+		max-width: 700px;
+		width: auto;
+		height: auto;
+	}
+	.layui-upload-list img{
+		width:120px;
+		height:120px;
+		float: left;
+	}
+	.imgBut{
+		margin-left: 50px;
+		margin-top:81px;
+	}
+	.showDImg1 img{
+		height:150px;
+		width:150px;
+		margin-left:10px;
+	}
+	
+	.imgdiv{
+		position:relative;
+		float:left;
+	}
+	.imgul{
+		width:150px;
+		position:absolute;
+		top:56px;
+		left:10px;
+		display:none;
+	}
+	.imgul li{
+		list-style:none;
+		width:100%;
+		height:30px;
+		background-color: rgba(100,149,237, .5);
+		color:#FFFFFF;
+		margin-top:2px;
+		text-align:center;
+		line-height:30px;
+		cursor:pointer;
+	}
+	
+	.annofont{
+		display:block;
+	   	margin-top:10px;
+	   	padding-left:10px;
+	}
+	.annoDesc{
+		display:block;
+	   	margin-top:7px;
+	   	padding-left:10px;
+	}
+	.layui-form-item .layui-input-inline{
+		width:70%;
+	}
+	.content{
+		width:70%;
+		display: block;
+		overflow:auto;
+	}
+	.content img{
+		height:200px;
+	}
+</style>
+
+<body>
+<div class="main">
+    <blockquote class="layui-elem-quote">查看商品</blockquote>
+    <div class="">
+		<form class="layui-form" action="">
+			<div class="layui-form-item">
+			  <label class="layui-form-label">商品名称：</label>
+			  <div class="layui-input-inline">
+			  	 <span class="annofont productName"></span>
+			  </div>
+			</div>
+			<div class="layui-form-item layui-form-text">
+				<label class="layui-form-label">商品规格：</label>
+				<div class="layui-input-block mytable"></div>
+			</div>			
+			<div class="layui-form-item">
+				<label class="layui-form-label">商品图片：</label>
+				<div class="layui-input-inline">
+					<div class="imgList">
+						<ul class="mainpicture">
+							<li class="nullimg detailsImg">
+								<div> 
+									<i class="fa fa-cloud-upload"></i>
+									<p>上传商品图片</p>
+								</div>
+							</li>
+							<li class="showDImg1" style="display: none">
+							</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+			<div class="layui-form-item">
+			  <label class="layui-form-label">商品详情：</label>
+			  <div class="layui-input-inline">
+			  	 <span class="annofont content"></span>
+			  </div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">状态：</label>
+				<div class="layui-input-inline">
+					 <span class="annofont shelfStatus"></span>
+				</div>
+				<!-- <div class="layui-input-block">
+				  <input type="radio" name="shelfStatus" value="1" title="上架" checked="">
+				  <input type="radio" name="shelfStatus" value="0" title="下架">
+				</div> -->
+			</div>
+			
+			<div class="layui-form-item rigth">
+			    <button type="button" class="layui-btn layui-btn-normal" lay-submit lay-filter="submitData">确认</button>
+				<button type="button" class="layui-btn layui-btn-primary" onclick="window.history.back()">取消</button>
+			</div>
+		</form>
+		<div class="main_list">
+			<table class="layui-hide" id="noticeList" lay-filter="layTable"></table>
+		</div>
+	</div>
+</div>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../plugins/layui/layui.js"></script>
+<script src="../js/product.js"></script>
+<script>
+	layui.config({
+	    base: '../plugins/layui/modules/'
+	});
+	
+	layui.use(['layer', 'form', 'http', 'common','laydate','table'], function () {
+	    var layer = layui.layer,
+	        http = layui.http,
+	        form = layui.form,
+	        common = layui.common,
+			table = layui.table;		
+				
+			var id = http.getParam('id');
+			var specificationList = [];
+			
+			http.get('admin/product/findByProductId',{productId:id},function(res){
+				 var data = res.data;
+				 $('.productName').html(data.name);
+				 $('.content').html(data.content);
+				 //商品图
+				 if(data.smallPic){
+					 $('.nullimg').eq(2).hide()
+					 $('.showDImg1').show().siblings('li').hide();
+					 var imghtml = '';
+					 var smallPic = data.smallPic.split(',');
+					 for(var i=0;i<smallPic.length;i++){
+						 var imgId = http.getUUID();
+						 imghtml += '<div id="div'+imgId+'" class="imgdiv">'+
+											 '<img src="'+smallPic[i]+'" id="proimg'+imgId+'" style="width:150px;height:150px">'+
+									'</div>';
+					 }
+					 $('.showDImg1').html(imghtml);
+				 }
+				 if(data.shelfStatus == 0)
+						$('.shelfStatus').html('下架');
+				 if(data.shelfStatus == 1)
+				 		$('.shelfStatus').html('上架');
+				 	
+				 //规格
+				 specificationList = [];
+				 var s = data.productSpecVoList;
+				 for(var j=0;j<s.length;j++){
+						 var p = {
+							 name: s[j].specName
+						 }
+						 var p_enums = [];
+						 for(var k=0;k<s[j].productSpecValueList.length;k++){
+							 p_enums.push(s[j].productSpecValueList[k].specValue)
+						 }
+						 p.p_enums = p_enums;
+						 specificationList.push(p)
+				 }
+				 getTable(data.goodVoList);//回显规格值						
+				 form.render();
+			})
+			
+			function getTable(goodVoList){//回显规格明细
+				if(goodVoList.length>0){
+					var tableH = '<table class="layui-table inputTable"><thead><tr>';
+					tableH += '<th>商品编号</th>';						
+					for(var i=0;i<specificationList.length;i++){
+						tableH += '<th>'+specificationList[i].name+'</th>'
+					}
+					tableH += '<th>会员价</th><th>售价</th><th>市场价</th></tr></thead><tbody>';
+											
+					for(var j=0;j<goodVoList.length;j++){
+						tableH += '<tr>'
+						tableH += '<td>'+goodVoList[j].goodNo+'</td>'
+						for(var k=0;k<goodVoList[j].goodSpecVoList.length;k++){
+							tableH += '<td>'+goodVoList[j].goodSpecVoList[k].specValue+'</td>';
+						}
+						tableH += '<td>'+goodVoList[j].vipPrice+'</td><td>'+goodVoList[j].price+'</td><td>'+goodVoList[j].marketPrice+'</td></tr>';  
+					}     
+			
+					tableH += '</tbody></table>';
+					$('.mytable').html(tableH)
+				}
+			}
+    })
+</script>
+</body>
+
+</html>

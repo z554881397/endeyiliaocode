@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>后台系统管理</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../plugins/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../css/main.css">
+    <link type="text/css" rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css"/>
+	<link rel="stylesheet" href="../css/style.css">
+    <style>
+        .title {
+            color: #FF5722;
+            font-weight: bold;
+            line-height: 46px;
+        }
+
+        .title .fa-exclamation-circle {
+            font-size: 22px;
+        }
+
+        .title span {
+            display: inline-block;
+            vertical-align: top;
+            height: 42px;
+            line-height: 42px;
+			font-size:16px;
+			
+        }
+
+        .iconweight1, .iconweight2 {
+            color: #648aeb;
+        }
+
+
+        .right {
+            float: right;
+            margin-top: 5px;
+            margin-left: 10px;
+        }
+
+        .layui-card-body {
+            overflow: hidden;
+        }
+
+        .layui-form-item {
+            margin-bottom: 0;
+        }
+
+        .layui-form-label {
+            width: 120px;
+        }
+
+
+        .goods > div {
+            float: left;
+        }
+
+        .goods > div img {
+            height: 50px;
+            margin-right: 10px;
+        }
+
+        .goods > div div {
+            line-height: 25px;
+        }
+
+        .totalText {
+            float: right;
+            width: 200px;
+        }
+
+        .totalText > div > span:nth-of-type(1) {
+            display: inline-block;
+            width: 100px;
+            text-align: right;
+
+        }
+
+        #modelV ,#toRemarks{
+            display: none;
+            padding: 15px;
+            box-sizing: border-box;
+        }
+
+        #modelV .layui-form-label,#toRemarks .layui-form-label {
+            width: auto;
+        }
+
+        #modelV .layui-form-item ,#toRemarks .layui-form-item {
+            margin-bottom: 10px;
+        }
+		.ponStyle{
+			margin-top:20px;
+			margin-bottom:20px ;
+		}
+		.layui-form-select dl{
+			max-height: 215px;
+		}
+		.layui-table-cell{
+			height: 50px;
+			line-height: 50px;
+		}
+		.layui-table thead tr{
+			background-color: #FFFFFF;
+		}
+    </style>
+</head>
+
+<body>
+<div class="main">
+    <div>
+        <blockquote class="layui-elem-quote">
+            <span>订单详情</span>
+            <button class="layui-btn layui-btn-sm btnright btn-blockquote" onclick="window.history.back()">返回</button>
+        </blockquote>
+    </div>
+    <div class="layui-card" id="printView">
+        <div class="layui-card-header no-print">
+            <div class="title">
+                <i class="fa fa-exclamation-circle"></i>
+                <span>当前订单状态：<span id="stateTy">已发货</span></span>
+            </div>
+        </div>
+        <div class="layui-card-body">
+            <div>
+                <table class="layui-table">
+                    <colgroup>
+                        <col width="250">
+                        <col width="200">
+                        <col width="150">
+                    </colgroup>
+                    <thead>
+                    <tr>
+                        <th>订单信息</th>
+						<th>付款信息</th>
+                        <th>订单备注</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+							<div class="layui-form-item">
+							    <label class="layui-form-label">用户账号：</label>
+							    <div class="layui-form-mid layui-word-aux" id="customUserAccount"></div>
+							</div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">订单编号：</label>
+                                <div class="layui-form-mid layui-word-aux" id="groupId"></div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">下单时间：</label>
+                                <div class="layui-form-mid layui-word-aux" id="orderCreateTime"></div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">收件人姓名：</label>
+                                <div class="layui-form-mid layui-word-aux" id="recUserName"></div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">收货人手机号：</label>
+                                <div class="layui-form-mid layui-word-aux" id="recTelephone"></div>
+                            </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">收货人地址：</label>
+                                <div class="layui-form-mid layui-word-aux" id="recAddress"></div>
+                            </div>
+                        </td>
+						<td>
+							<div class="layui-form-item">
+								<label class="layui-form-label">付款时间：</label>
+								<div class="layui-form-mid layui-word-aux" id="payTime"></div>
+							</div>
+							<div class="layui-form-item">
+								<label class="layui-form-label">总金额：</label>
+								<div class="layui-form-mid layui-word-aux" id="orderAmountMoney1"></div>
+							</div>
+							<div class="layui-form-item">
+								<label class="layui-form-label">会员价：</label>
+								<div class="layui-form-mid layui-word-aux" id="vipMoney2"></div>
+							</div>
+							<div class="layui-form-item">
+								<label class="layui-form-label">实付金额：</label>
+								<div class="layui-form-mid layui-word-aux" id="payAble2"></div>
+							</div>
+						</td>
+                        <td>
+                            <div class="layui-form-item">
+                                <div class="layui-form-mid layui-word-aux" id="remarks"></div>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div>
+                <div class="ponStyle">商品信息</div>
+
+				<div class="main_list">
+					<table class="layui-hide" id="selectList" lay-filter="layTable"></table>
+				</div>
+
+            </div>
+            <div>
+                <div class="totalText">
+                    <div>
+                        <span>总金额：</span>
+                        <span id="orderAmountMoney"></span>
+                    </div>
+                    <div>
+                        <span>会员价：</span>
+                        <span id="vipMoney"></span>
+                    </div>
+                    <div>
+                        <span>实付金额：</span>
+                        <span id="payAble"></span>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</div>
+<script type="text/javascript" src="../plugins/layui/layui.js"></script>
+<script src="../js/jquery.min.js"></script>
+<script src="../plugins/layui/modules/Print.js"></script>
+
+<script>
+		
+    layui.config({
+        base: '../plugins/layui/modules/',
+    }).use(['http', 'form', 'table'], function () {
+          var form = layui.form,
+		      http = layui.http,
+              table = layui.table;
+
+        var id = http.getParam('id');
+		
+		getInfo()
+		function getInfo(){
+			http.get('admin/order/findByGroupId', {
+			    groupId: id
+			}, function (res) {
+			    if (res.code == 200) {
+			        let _data = res.data;
+			        showDetail(_data);
+					showgoodsList(_data);
+			    }
+			});
+		}
+		
+		// 订单基础信息
+		function showDetail(data) {
+		    $("#customUserAccount").html(data.customUserAccount);//用户账号
+		    $("#groupId").html(data.groupId);//订单编号
+		    $("#orderCreateTime").html(data.orderCreateTime);//下单时间
+		    $("#recUserName").html(data.recUserName);//收货人
+		    $("#recTelephone").html(data.recTelephone);//收货人手机号
+			$("#recAddress").html(data.recAddress);//收货地址
+			$("#remarks").html(data.remarks);//备注
+		
+			$("#orderAmountMoney").html('￥'+data.orderAmountMoney);//总金额
+			$("#orderAmountMoney1").html('￥'+data.orderAmountMoney);//总金额
+			$("#payAble").html('￥'+data.payAble);//实付金额
+			$("#payAble2").html('￥'+data.payAble);//实付金额
+			
+			$("#payTime").html(data.payTime); //付款时间
+			
+			if (data.orderAmountMoney != data.payAble ) {
+				$("#vipMoney").html('￥'+data.payAble);   //会员价
+				$("#vipMoney").parent('div').show()
+				$("#vipMoney2").html('￥'+data.payAble);   //会员价
+				$("#vipMoney2").parent('div').show()
+			} else {
+				$("#vipMoney").parent('div').hide()
+				$("#vipMoney2").parent('div').hide()
+			}
+		}
+		
+		//商品列表
+		var selectTable;
+		function showgoodsList(datalist){
+			selectTable = http.table1({
+				elem: '#selectList',
+				id: 'selectTable',
+				cols: [[
+				   {field:'goodNo', title: '商品名称', align : 'center',
+						templet: function (d) {
+							var img;
+							if (d.productImage != '') {
+							    var imglist = d.productImage.split(',');
+							    img = imglist[0]
+							} else {
+							    img = '#'
+							}
+							var html = '<div class="goods">\n' +
+											'<div>\n' +
+												'<img src="' + img + '" alt="">\n' +
+											'</div>\n' +
+											'<div style="width: 40px">\n' +
+												'<div class="productName">'+d.productName+'</div>\n' +
+												'<div class="sku">'+d.sku+'</div>\n' +
+											'</div>\n' +
+										'</div>\n';
+							return html;
+						}
+				   }
+				  ,{field:'goodNo', title: '商品编号', align : 'center',width: 180}
+				  ,{field:'unitPrice', title: '单价', align : 'center'}
+				  ,{field:'count', title: '数量', align : 'center'}
+				  ,{field:'remarks', title: '商家备注', align : 'center'}
+				  ,{field:'', title: '是否自提', align : 'center',
+						templet: function (d) {
+							if(d.expressName != "自提"){
+								return "否"
+							}else{
+								return "是"
+							}
+						}
+				  }
+				  ,{field:'', title: '操作', align : 'center',fixed: 'right',width: 210,
+						templet: function (d) {
+							var html = '<a class="buttoncolor" lay-event="end" >订单完成</a>';
+							if(d.expressName != "自提"){
+								html += '<a class="buttoncolorOne" lay-event="logistics" >查看物流</a>'
+							}
+							return html;
+						}
+				  }
+				]],
+				data:datalist.singleOrderList
+			});
+		}
+		
+		//操作
+		table.on('tool(layTable)', function(obj){
+			var data = obj.data;
+			if(obj.event=='logistics'){
+				//查看物流
+				window.location.href="order_logistics.html?id="+data.shoppingOrderNo;
+			}else if(obj.event=='end'){
+				//订单完成
+				var opDalete = layer.open({
+					content : "确定订单完成？",
+					icon : 3,
+					closeBtn: false,
+					btn : [ '确定','取消'],
+					yes : function(index){
+						http.post('admin/order/completeOrder', {
+							orderNo: data.shoppingOrderNo
+						}, function (d) {
+							if (d.code == '200') {
+							    layer.msg('订单已完成！',
+							        {
+							            time: 1000
+							        }, function () {
+							            window.history.back(1)
+							        }
+							    )
+							} else {
+								layer.msg(d.msg);
+							}
+						});								   
+					}
+				});
+			}
+		});
+    });
+	
+	
+	
+	
+</script>
+
+</body>
+
+</html>

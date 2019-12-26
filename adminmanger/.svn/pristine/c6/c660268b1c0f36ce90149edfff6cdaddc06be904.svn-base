@@ -1,0 +1,83 @@
+/*公共样式*/
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+.main{
+	padding:10px;
+}
+.myCard{
+	height:740px;
+	background-color: #FFFFFF;
+	padding:10px;
+}
+.layui-card-header.layuiadmin-card-header-auto {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    height: auto;
+}
+.select-but{
+	margin-left:20px;
+}
+/* 表格按钮 */
+a.buttoncolor {
+    color: #1e9fff;
+    margin-right: 15px;
+    cursor: pointer;
+}
+a.buttoncolorOne {
+    color: #1e9fff;
+    cursor: pointer;
+}
+.inMyForm{
+	width:50%;
+	margin:auto;
+	margin-top:2%;
+}
+.overbut{
+	width:100%;
+	text-align: center;
+	margin-top:10%
+}
+.backbut{
+	margin-left:100px!important;
+}
+.selectFro{
+	margin-top:30px;
+}
+.layui-elem-quote{
+	background-color: #f2f2f2!important;
+}
+.rigth {
+	text-align: right;
+	margin-top:5%;
+}
+.layui-elem-quote .btnright {
+    float: right;
+    margin-left: 10px;
+}
+.btn-blockquote {
+    position: relative;
+    bottom: 4px;
+}
+/* 分页靠右 */
+.layui-table-page{
+	text-align: right
+}
+/* 按钮颜色 */
+.layui-btn{
+	background-color: #409EFF;
+}
+.layui-btn-primary {
+    border: 1px solid #C9C9C9;
+    background-color: #fff;
+    color: #555;
+}
+/* 分页按钮颜色 */
+.layui-laypage .layui-laypage-curr .layui-laypage-em{
+	background-color: #409EFF;
+}
+.layui-elem-quote{
+	border-left: 5px solid #409EFF;
+}

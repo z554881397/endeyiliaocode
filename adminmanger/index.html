@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>恩德首页</title>
+    <link rel="shortcut icon" href="" type="image/x-icon"/>
+    <link type="text/css" rel="stylesheet" href="plugins/layui/css/layui.css"/>
+    <link type="text/css" rel="stylesheet" href="plugins/font-awesome/css/font-awesome.min.css"/>
+    <link type="text/css" rel="stylesheet" href="css/global.css"/>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .admin-login-box .logo img {
+            width: 40px;
+            height: 40px;
+            border-radius: 100%;
+        }
+
+        .modifyForm .layui-form-label {
+            width: 100px;
+        }
+		.layui-nav-tree .layui-nav-child dd.layui-this, .layui-nav-tree .layui-nav-child dd.layui-this a, .layui-nav-tree .layui-this, .layui-nav-tree .layui-this>a, .layui-nav-tree .layui-this>a:hover {
+		    background-color: #409EFF!important;
+		}
+		.layui-nav-tree .layui-nav-bar {
+		    background-color: #409EFF!important;
+		}
+    </style>
+    <script type="text/javascript">
+        if (top.location != location) {
+            top.location.reload();
+        }
+    </script>
+</head>
+
+<body>
+<div class="layui-layout layui-layout-admin">
+    <div class="layui-header header header-demo">
+        <div class="layui-main">
+            <div class="admin-login-box">
+                <a class="logo" href="index.html">
+                    <span style="font-family:'微软雅黑 Bold', '微软雅黑';font-style:normal;font-size:20px;">恩德生态后台管理系统</span>
+                </a>
+            </div>
+            <ul class="layui-nav admin-header-item">
+                <li class="layui-nav-item">
+                    <a href="javascript:;" class="admin-header-user">
+                        <!-- <span>欢迎您，</span> -->
+                        <!-- <span style="font-weight: bold;margin: 0 5px;">管理员</span> -->
+                        <img id="portrait" src="img/man.png"/>
+						<span id="username"></span>
+                    </a>
+                    <dl class="layui-nav-child" style="margin-top: 5px;">
+                        <dd>
+                            <a href="javascript:;" id="user_info"><i class="fa fa-gear" aria-hidden="true"></i>
+                                修改密码
+                            </a>
+                        </dd>
+                        <dd>
+                            <a href="javascript:;" id="loginOut"><i class="fa fa-sign-out" aria-hidden="true"></i>
+                                退出
+                            </a>
+                        </dd>
+                    </dl>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="layui-side layui-bg-black" id="admin-side" style="padding-top: 10px;">
+        <div class="layui-side-scroll" id="admin-navbar-side" lay-filter="side"></div>
+    </div>
+    <div class="layui-body" style="bottom: 0;" id="admin-body">
+        <div class="layui-tab admin-nav-card layui-tab-brief" lay-filter="admin-tab">
+
+            <div class="layui-tab-content" style="min-height: 150px; padding: 0px;">
+                <div class="layui-tab-item layui-show">
+                    <iframe id="iframe" src="page/main.html"></iframe>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 底部区域 -->
+    <div class="layui-footer footer footer-demo" id="admin-footer">
+        <div class="layui-main">
+            <p>
+                <span>2019 &copy;</span>
+                <a href="http://www.logicalthinksoft.com" target="_blank">深圳市逻辑思维软件有限公司</a><span>. 版权所有 </span>
+            </p>
+        </div>
+    </div>
+
+    <div class="site-tree-mobile layui-hide">
+        <i class="layui-icon">&#xe602;</i>
+    </div>
+    <div class="site-mobile-shade"></div>
+
+    <!-- 修改密码 -->
+    <div class="dialogForm" id="modifyForm">
+        <form class="layui-form modifyForm" id="update" action="">
+            <div class="layui-form-item">
+                <label class="layui-form-label">原密码</label>
+                <div class="layui-input-inline">
+                    <input type="password" name="oldpwd" autocomplete="off" placeholder="请输入原密码"
+                           class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">新密码</label>
+                <div class="layui-input-inline">
+                    <input type="password" name="newpwd" autocomplete="off" placeholder="请输入新密码"
+                           class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">确认密码</label>
+                <div class="layui-input-inline">
+                    <input type="password" name="newpwd1" autocomplete="off" placeholder="请输入确认密码"
+                           class="layui-input">
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+</body>
+<script type="text/javascript" src="plugins/layui/layui.js"></script>
+<script type="text/javascript" src="js/index.js"></script>
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/global.js"></script>
+<!-- <script type="text/javascript" src="js/auth.js"></script> -->
+<script type="text/javascript">
+    layui.config({
+        base: 'plugins/layui/modules/'
+    });
+    layui.use(['layer', 'form', 'http', 'common'], function () {
+        var layer = layui.layer,
+            http = layui.http,
+            form = layui.form,
+            common = layui.common;
+			
+		
+		var token = localStorage.getItem('ende-token');
+		if(token){
+			$.ajax({
+				url: TUrl + 'admin/admin/currentUser',
+				async: false,
+				dataType: "json",
+				headers:{"authentication":token},
+				type: "GET",
+				success: function(res) {
+					if (res.code == 402) {
+					    top.window.location.href = "page/login.html";
+					} else if (res.code == 200) {
+						if(res.data){
+							$("#username").text(res.data.name);
+						}
+					} else {
+					    layer.msg(res.msg);
+					}
+				}
+			});
+		}else{
+			location.href = "page/login.html";
+		}
+			
+
+        // //退出
+        $('#loginOut').on('click', function () {
+            http.myOpen({
+                title: '提示',
+                content: '<p style="text-align:center;margin-top:20px;">确定要退出吗？</p>',
+                area: ['300px', '150px'],
+                btn: ['是的', '取消'],
+                btn1: function (index, layero) {
+					localStorage.setItem('ende-time', '');
+					localStorage.setItem('ende-token', '');
+					localStorage.setItem('ende-user', '');
+					localStorage.setItem('ende-auth', '');
+					localStorage.setItem('ende-menu', '');
+                    location.href = "page/login.html";
+                }
+            });
+        });
+
+
+        // //修改密码
+        $('#user_info').on('click', function () {
+            document.getElementById("update").reset();
+            http.myOpen({
+                title: '修改密码',
+                content: $('#modifyForm'),
+                area: ['400px', '300px'],
+                btn: ['确定', '取消'],
+                btn1: function (index, layero) {
+                    var oldpwd = $('#modifyForm input[name=oldpwd]').val();
+                    var newpwd = $('#modifyForm input[name=newpwd]').val();
+                    var newpwd1 = $('#modifyForm input[name=newpwd1]').val();
+                    if (!oldpwd) {
+                        layer.msg('请输入原密码');
+                        return;
+                    }
+                    if (!newpwd) {
+                        layer.msg('请输入新密码');
+                        return;
+                    }
+                    if (!newpwd1) {
+                        layer.msg('请输入确认密码');
+                        return;
+                    }
+                    if (newpwd != newpwd1) {
+                        layer.msg('输入密码不一致');
+                        return;
+                    }
+                    http.post('admin/admin/password/update', {
+                        oldPassword: oldpwd,
+                        newPassword: newpwd,
+                    }, function (data) {
+                        if (data.code == 200) {
+                            layer.msg(data.msg);
+                            layer.close(index);
+                            location.reload();
+                        } else {
+                            layer.msg(data.msg);
+                        }
+                    });
+                }
+            });
+        });
+    });
+</script>
+
+</html>

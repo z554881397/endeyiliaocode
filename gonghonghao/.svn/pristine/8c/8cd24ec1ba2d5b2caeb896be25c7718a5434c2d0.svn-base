@@ -1,0 +1,617 @@
+<template>
+    <div class="sureOrder">
+        <div class="sure-order-address">
+            <div v-if="!address" class="no-address">
+                <div class="no-address-img">
+                    <van-image fit="contain" :src="`${publicPath}img/sure-order-address.png`"></van-image>
+                    <div>您还没有收货地址哦~</div>
+                </div>
+                <div class="no-address-btn">
+                    <van-button type="info" size="mini" plain hairline round @click="onAddressAdd">去设置</van-button>
+                </div>
+            </div>
+            <div v-else class="my-address" @click="onAddress">
+                <div class="my-address-img">
+                    <van-image fit="contain" src="img/sure-order-local.png"></van-image>
+                </div>
+                <div class="my-address-content">
+                    <div class="my-address-person">
+                        <span>{{address.receiverName}}</span>
+                        <span>{{address.receiverTelephone}}</span>
+                    </div>
+                    <div class="my-address-address">
+                        {{address.province}}{{address.city}}{{address.area}}{{address.detailAddress}}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="my-order">
+            <div>
+                <orderGoods :selectGoodsDetail="selectGoodsDetail"></orderGoods>
+                <div class="sku-good-num">
+                    <div>数量</div>
+                    <div>
+                        <van-stepper v-model="selectGoodsDetail.count" @change="onCount"/>
+                    </div>
+                </div>
+            </div>
+            <div class="order-remark">
+                <div class="order-remark-title">订单备注</div>
+                <div class="order-remark-field">
+                    <van-field
+                            v-model="remark"
+                            rows="2"
+                            autosize
+                            type="textarea"
+                            maxlength="50"
+                            placeholder="选填，请先与商家协商一致。"
+                            show-word-limit
+                    />
+                </div>
+            </div>
+
+        </div>
+        <div class="fixed-bottom">
+            <div class="flex-bottom">
+                <div class="flex-left">共{{selectGoodsDetail.count}}件</div>
+                <div class="flex-right">
+                    <div class="flex-right-price">
+                        <span>实付金额：</span>
+                        <span>￥{{actualPrice|formatPrice}}</span>
+                    </div>
+                    <div>
+                        <van-button type="info" size="normal" :disabled="submitBtn" @click="toSubmit">提交订单</van-button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <van-popup
+          v-model="show"
+          :style="{ width: '80%' }"
+          :close-on-click-overlay="popupCloseFlag"
+        >
+          <div class="popup-div">
+              <div class="popup-title">提示</div>
+              <div class="popup-content">
+                  <div class="pupup-p">
+                      <p>您还未领取合伙人权益</p>
+                      <p>成为会员及合伙人将会享受更多的购买优惠</p>
+                  </div>
+                  <div class="popup-btn">
+                      <van-button type="info" block size="normal" @click="onMember">了解会员</van-button>
+                      <van-button type="info" block size="normal" @click="onMember">了解合伙人</van-button>
+                      <van-button type="default" block size="normal" :disabled="submitBtn"  @click="onSubmit">暂不了解</van-button>
+                  </div>
+              </div>
+          </div>
+        </van-popup>
+
+    </div>
+</template>
+
+<script>
+import api from "../../api";
+import constConfig from "../../api/config.js";
+import wxapi from '@/assets/js/jweixin.js'
+import commonUtil from '@/assets/js/commonUtil.js';
+import { setTimeout } from 'timers';
+
+export default {
+  name: "sureOrder",
+  data() {
+    return {
+      publicPath: process.env.BASE_URL,
+      productId: "", // 产品id
+      selectGoodsDetail: {
+        goodsId: "",
+        name: "",
+        pic: "",
+        skuName: "",
+        price: "",
+        count: 1,
+        freight: 0
+      }, // 选择的商品详情
+      address: "", // 地址
+      remark: "", // 订单备注
+      actualPrice: "", //实付金额
+      refreshPrice: true, //刷新实付金额
+      timeM: "",
+
+      show: false, // 支付提示
+      popupCloseFlag: false,
+      shareUserId: '',
+      payRecode: '',
+      transactionId: '',
+      submitBtn: false,
+    };
+  },
+  created() {
+    this.shareUserId = commonUtil.parseUrlParams('shareUserId')
+    this.productId = this.$route.query.productId;
+    this.getDetail();
+
+    //先从state中获取地址id，那个Id是跳过去地址列表选中地址之后存储在store里面的,
+    //如果取不到再取默认地址
+    let receiveAddressId = this.$store.state.receiveAddressId;
+    if (receiveAddressId) {
+      this.findAddressById(receiveAddressId);
+    } else {
+      this.commonAddress();
+    }
+  },
+  mounted() {
+    wxapi.wxRegister()//配置
+  },
+  methods: {
+    getDetail() {
+      // 产品详情
+      let _this = this;
+      api.findProductInfo({
+        productId: this.productId
+      }).then(res => {
+        if (res.code == 200) {
+          //商品详情
+          _this.selectGoodsDetail.productImage = res.data.smallPic
+            ? res.data.smallPic.split(",")[0]
+            : "";
+          _this.selectGoodsDetail.productName = res.data.name;
+          _this.selectGoodsDetail.goodsId = _this.$route.query.goodsId;
+          _this.selectGoodsDetail.count = _this.$route.query.count;
+          _this.selectGoodsDetail.skuName = _this.$route.query.property;
+          _this.selectGoodsDetail.price = _this.$route.query.price;
+          _this.calculationM();
+        } else {
+          _this.$toast(res.msg);
+        }
+      });
+    },
+    /**
+     * 获取用户默认地址
+     */
+    commonAddress() {
+      api.listClientAddress({
+        commonAddress: 1
+      }).then(res => {
+        if (res.code == 200 && res.data.length > 0) {
+          let addressList = res.data;
+          //默认地址
+          let commonAddress = addressList[0];
+          //默认地址赋值
+          this.address = commonAddress;
+        }
+      });
+    },
+    /**
+     * 根据地址id查询地址详情进行赋值
+     */
+    findAddressById(addressId) {
+      api.findAddressById({
+        id: addressId
+      }).then(res => {
+        if (res.code == 200 && res.data) {
+          //地址详情
+          let addressInfo = res.data;
+          this.address = addressInfo;
+        }
+      });
+    },
+    onAddressAdd() {
+      // 去设置
+      this.$router.push({
+        path: "/addressAdd"
+      });
+    },
+    onAddress() {
+      // 选择地址
+      this.$router.push({
+        path: "/addressList"
+      });
+    },
+    onCount(value) {
+      // 数量发生改变
+      this.selectGoodsDetail.count = value;
+      var this_ = this;
+      clearTimeout(this_.timeM);
+      this_.timeM = setTimeout(function() {
+        this_.calculationM();
+      }, 500);
+    },
+    calculationM() {
+      //计算价格
+      var this_ = this;
+      var singleOrderList = [{
+        goodId: this.selectGoodsDetail.goodsId,
+        count: this.selectGoodsDetail.count
+      }];
+      api.calculationPrice({
+        singleOrderList: singleOrderList
+      })
+      .then(res => {
+        if (res.code == 200 && res.data) {
+          this_.actualPrice = res.data.payAble;
+        }
+      });
+    },
+    //提交订单 -- 询问
+    toSubmit(){
+      this.submitBtn = true
+      if (!this.address.receiverName) {
+        this.$toast("请选择收货地址");
+        return;
+      }
+      var that = this
+      api.findCurrentUserAccountInfo({}).then(res => {
+        if(res.code == 200){
+          if(res.data.role == 3 || res.data.role == 2){
+            that.onSubmit()
+          }else{
+            that.show = true;
+          }
+        }else{
+          that.$toast(res.msg)
+        }
+      })   
+      setTimeout(function() {
+        that.submitBtn = false
+      },1000)     
+    },
+    onSubmit() {
+      // 提交订单
+      this.submitBtn = true
+      this.$toast.loading({
+        message: '加载中...',
+        forbidClick: true,
+        duration: 0,
+      })
+      let _this = this;
+      //校验参数
+      if (!this.address) {
+        this.$toast.clear()
+        this.$toast("请选择收货地址");
+        return;
+      }
+
+      api.createOrder({
+        receiveProvince: _this.address.province,
+        receiverAddress:
+          _this.address.province +
+          _this.address.city +
+          _this.address.area +
+          _this.address.detailAddress,
+        receiverName: _this.address.receiverName,
+        receiverTelephone: _this.address.receiverTelephone,
+        remarks: _this.remark,
+        shareUserId: _this.shareUserId,
+        singleOrderList: [
+          {
+            goodId: _this.selectGoodsDetail.goodsId,
+            count: _this.selectGoodsDetail.count
+          }
+        ]
+      }).then(res => {
+        if (res.code == 200) {
+          //请求成功,
+          //唤起支付页面
+          //关闭弹框
+
+          //返回的组订单id
+          let groupId = res.data;
+          api.wxPay({
+            groupId: groupId
+          }).then(res => {
+            if (res.code == 200) {
+              let payInfo = res.data;
+      console.log(JSON.stringify(payInfo))
+                // _this.onfPay()
+                _this.onPay(payInfo)
+              _this.groupId = groupId
+            } else {
+              _this.$toast(res.msg);
+            }
+          });
+        } else {
+          _this.$toast(res.msg);
+        }
+      });  
+      setTimeout(function() {
+        _this.submitBtn = false
+      },1000) 
+    },
+    onPay(payInfo) {
+      let _this = this;
+      //调起支付
+      wxapi.chooseWXPay({
+        timeStamp: payInfo.timeStamp, //时间戳，自1970年以来的秒数
+        nonceStr: payInfo.nonceStr, //随机串
+        package: payInfo.package,
+        signType: payInfo.signType, //微信签名方式：
+        paySign: payInfo.paySign, //微信签名
+        success:function(res) {
+          _this.$toast.clear()
+          _this.show = false;
+          if (res.err_msg == "get_brand_wcpay_request:ok") {
+            // 使用以上方式判断前端返回,微信团队郑重提示：
+            //res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
+            // 付款成功
+            _this.$router.push({
+              path: '/paySuccess',
+              query: {
+                groupId: _this.groupId
+              }
+            })
+          } else {
+            // 付款失败
+            _this.$router.push({
+              path: "/payFail"
+            });
+
+          }
+        },
+        cancel: function(res){
+          // 取消支付
+          _this.$toast.clear()
+          _this.show = false;
+        },
+        fail: function(res){
+          // 支付失败
+          _this.$toast.clear()
+          _this.show = false;
+        }
+      });
+    },
+    onfPay() {
+      // 假支付
+      let _this = this;
+      api.uuid({}).then(res => {
+        if (res.code == 200) {
+          _this.payRecode = res.data
+        } else {
+          _this.$toast(res.msg);
+        }
+      })
+      
+      api.uuid({}).then(res => {
+        if (res.code == 200) {
+          _this.transactionId = res.data
+        } else {
+          _this.$toast(res.msg);
+        }
+      })
+      
+    },
+    onffPay() {
+      let _this = this;
+      api.orderPay({
+        groupId: this.groupId,
+        payRecode: this.payRecode,
+        transactionId: this.transactionId,
+        payChannel: '微信'
+      }).then(res => {
+        _this.$toast.clear()
+        if (res.code == 200) {
+          _this.show = false;
+          // 付款成功
+          _this.$router.push({
+            path: '/paySuccess',
+            query: {
+              groupId: _this.groupId
+            }
+          })
+
+        } else {
+          // 付款失败
+          _this.$router.push({
+            path: "/payFail"
+          });
+        }
+      });
+
+    },
+    onMember() {
+      // 了解会员,了解合伙人
+      this.$router.push({
+        path: "/memberDescription"
+      });
+    },
+  },
+  watch: {
+    payRecode() {
+      console.log(this.transactionId)
+      if(this.transactionId){
+        this.onffPay()
+      }
+    },
+    transactionId() {
+      console.log(this.payRecode)
+      if(this.payRecode){
+        this.onffPay()
+      }
+
+    }
+  }
+};
+</script>
+<style scope>
+.sure-order-address {
+  margin: 0.75rem;
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 0.75rem;
+}
+
+.no-address {
+  text-align: center;
+}
+
+.no-address-img {
+  text-align: center;
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.no-address-img .van-image {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+.no-address-btn {
+  margin-top: 1rem;
+}
+
+.sureOrder .van-button--plain.van-button--info {
+  padding: 0 1.6rem;
+}
+
+/* 地址 start */
+.my-address {
+  display: flex;
+  align-items: center;
+}
+
+.my-address-img {
+  width: 1.13rem;
+  height: 1.34rem;
+  margin-right: 1rem;
+  flex-shrink: 0;
+  background: #f8f8f8;
+}
+
+.my-address-img .van-image {
+  width: 1.13rem;
+  height: 1.34rem;
+}
+
+.my-address-person {
+  line-height: 2.5rem;
+}
+
+.my-address-person > span:nth-of-type(1) {
+  font-size: 0.88rem;
+  font-weight: 500;
+  margin-right: 2rem;
+}
+
+.my-address-person > span:nth-of-type(2) {
+  color: #666;
+}
+
+.my-address-address {
+  line-height: 1.19rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  padding: 0.5rem 0;
+}
+
+/* 地址 end */
+
+.my-order {
+  margin: 0.75rem;
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 1rem 0.75rem;
+}
+
+.sku-good-num {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sku-good-num > div:nth-of-type(1) {
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.25rem;
+}
+
+.sku-good-num > div:nth-of-type(2) {
+  overflow: hidden;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.order-remark-title {
+  margin-top: 0.75rem;
+}
+
+.order-remark-field {
+  border: 0.05rem solid #999999;
+  border-radius: 0.3rem;
+  margin-top: 0.75rem;
+  overflow: hidden;
+}
+
+.fixed-bottom {
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  background: #fff;
+}
+
+.flex-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 3.7rem;
+  padding: 0 0.75rem;
+}
+
+.flex-left {
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.flex-right-price {
+  font-size: 0.88rem;
+  margin-right: 1rem;
+  color: #666;
+}
+
+.flex-right-price > span:nth-of-type(2) {
+  font-size: 0.94rem;
+  color: #ed1f1f;
+  font-weight: 500;
+}
+
+.flex-right {
+  display: flex;
+  align-items: center;
+}
+
+/* popup start */
+.popup-div {
+  padding: 0.75rem;
+}
+
+.popup-title {
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 500;
+  height: 3rem;
+  line-height: 3rem;
+  color: #111;
+  border-bottom: 0.05rem solid #ebedf0;
+}
+
+.pupup-p {
+  text-align: center;
+}
+
+.pupup-p > p:nth-of-type(2) {
+  font-size: 0.75rem;
+  color: #666;
+}
+
+.popup-btn {
+  padding: 0 2rem;
+}
+
+.popup-btn button {
+  margin-bottom: 0.75rem;
+}
+
+/* popup end */
+</style>

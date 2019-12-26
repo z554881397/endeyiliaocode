@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>后台系统管理</title>
+    <link rel="stylesheet" href="../plugins/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+
+<body>
+<div class="main">
+    <blockquote class="layui-elem-quote">添加账号</blockquote>
+    <div class="inMyForm">
+		<form class="layui-form" action="">
+			<div class="layui-form-item">
+			  <label class="layui-form-label">账号：</label>
+			  <div class="layui-input-block">
+				 <input type="text" class="layui-input" name="account" placeholder="账号" />
+			  </div>
+			</div>
+			<div class="layui-form-item">
+			  <label class="layui-form-label">密码：</label>
+			  <div class="layui-input-block">
+				 <input type="text" class="layui-input" name="password" placeholder="密码" />
+			  </div>
+			</div>
+			<div class="layui-form-item">
+			  <label class="layui-form-label">用户名：</label>
+			  <div class="layui-input-block">
+				 <input type="text" class="layui-input" name="name" placeholder="账号" />
+			  </div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">角色：</label>
+				<div class="layui-input-block">
+				  <select name="roleId" lay-filter="selectRole">
+					<option value=""></option>
+				  </select>
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">状态</label>
+				<div class="layui-input-block">
+				  <input type="radio" name="openStatus" value="1" title="启用" checked="">
+				  <input type="radio" name="openStatus" value="2" title="禁用">
+				</div>
+			</div>
+			<div class="layui-form-item layui-form-text">
+				<div class="layui-input-block">
+				  <textarea placeholder="角色权限描述" class="layui-textarea describe" readonly></textarea>
+				</div>
+			</div>
+			<div class="layui-form-item rigth">
+			    <button type="button" class="layui-btn layui-btn-normal sure">确认</button>
+				<button type="button" class="layui-btn layui-btn-primary" onclick="window.history.back()">取消</button>
+			</div>
+		</form>
+		<div class="main_list">
+			<table class="layui-hide" id="noticeList" lay-filter="layTable"></table>
+		</div>
+	</div>
+</div>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../plugins/layui/layui.js"></script>
+<script>
+	layui.config({
+	    base: '../plugins/layui/modules/'
+	});
+	
+	layui.use(['layer', 'form', 'http', 'common','laydate','table'], function () {
+	    var layer = layui.layer,
+	        http = layui.http,
+	        form = layui.form,
+	        common = layui.common;
+			
+			var roleList = []; //所有角色信息(用于兑换角色权限描述，即角色菜单)
+			//角色
+			http.get('admin/role/listAll',{},function(res){
+				var html = '<option value=""></option>';
+				var data = res.data;
+				roleList = res.data;
+				for (var i = 0; i < data.length; i++) {
+					html += '<option value="' + data[i].id + '">' + data[i].roleName + '</option>'
+				}
+				$('select[name=roleId]').html(html);
+				form.render('select');
+			})
+			
+			form.on('select(selectRole)', function(data){
+			    getSomeVal(data.value);
+			});    
+		    
+			//兑换角色菜单
+			function getSomeVal(value){
+				var val = '';
+				for (var i = 0; i < roleList.length; i++) {
+					if(Number(value) == roleList[i].id){
+						if(roleList[i].authVoList && roleList[i].authVoList.length>0){
+							for(var x = 0; x < roleList[i].authVoList.length; x++){
+								var data = roleList[i].authVoList[x];
+								val += data.title;
+								val += '，';
+							}
+							// roleList[i].authVoList.forEach((data,index) => {
+							// 	val += data.title;
+							// 	val += '，';
+							// })
+						}
+					}
+				}
+				val = val.substr(0, val.length - 1);  
+				$(".describe").val(val);
+			}
+			
+			//添加
+			$(".sure").click(function () {
+				var account = $('input[name=account]').val();
+				if ($.trim(account) == "") {
+					layer.msg('账号不能为空')
+					$("input[name='account']").focus();
+					return false;
+				}
+				var password = $('input[name=password]').val();
+				if ($.trim(password) == "") {
+					layer.msg('密码不能为空')
+					$("input[name='password']").focus();
+					return false;
+				}
+				var name = $('input[name=name]').val();
+				if ($.trim(name) == "") {
+					layer.msg('用户名不能为空')
+					$("input[name='name']").focus();
+					return false;
+				}
+				var openStatus = $('input[name=openStatus]:checked').val();
+				var roleId = $('select[name=roleId]').val();
+				if (roleId == "") {
+					layer.msg('请选择角色')
+					return false;
+				}
+
+				var data = {
+					account: account,
+					password:password,
+					name:name,
+					openStatus: openStatus,
+					roleId:roleId
+				}
+				http.post('admin/admin/add', data,function(res){
+					if(res.code == 200){
+						layer.msg('保存成功', {icon:1 , time: 2000}, function(){
+							location.href='account_list.html';
+						});
+					}else{
+						layer.msg(res.msg)
+					}
+				})
+			})
+			
+    })
+</script>
+</body>
+
+</html>

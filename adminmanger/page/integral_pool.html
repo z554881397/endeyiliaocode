@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>积分池</title>
+    <link rel="stylesheet" href="../plugins/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+
+<body>
+<div class="main">
+    <blockquote class="layui-elem-quote">积分池列表</blockquote>
+    <div class="layui-card">
+        <div class="layui-card-header layuiadmin-card-header-auto">
+			<form class="layui-form" action="">
+				<div class="layui-form-item layui-inline">
+				  <label class="layui-form-label">搜索条件：</label>
+				  <div class="layui-input-inline">
+					 <input type="text" class="layui-input" name="searchKey" placeholder="合伙人手机号" />
+				  </div>
+				</div>				
+				<div class="layui-form-item layui-inline">
+				    <label class="layui-form-label">季度：</label>
+					<div class="layui-input-inline">
+						<select lay-filter="quarterye" id="quarterye">
+
+						</select>
+					</div>
+					<div class="layui-input-inline">
+					  <select lay-filter="quarterjd" id="quarterjd">
+					    <option value=""></option>
+
+					  </select>
+					</div>
+				</div>
+				<div class="layui-form-item layui-inline" style="">
+					<label class="layui-form-label" style="width:115px">可获得积分比例：</label>
+				    <div class="layui-input-block" style=" margin-left: 145px;">
+				      <select name="ratio" lay-filter="aihao">
+				        <!-- <option value=""></option>
+				        <option value="0.08">8%</option>
+						<option value="0.05">5%</option>
+						<option value="0.03">3%</option> -->
+				      </select>
+				    </div>
+				</div>
+				<div class="layui-form-item layui-inline select-but">
+					<button class="layui-btn selectBut" lay-submit lay-filter="searchBth" type="button">查询</button>
+				</div>
+			</form>
+		</div>
+		<div class="main_list">
+			<table class="layui-hide" id="selectList" lay-filter="layTable"></table>
+		</div>
+	</div>
+</div>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../plugins/layui/layui.js"></script>
+<script type="text/javascript" src="../js/auth.js"></script>
+<script>
+	
+	// 按钮权限
+	if(getAuth('积分管理','积分池','查询')){ $('.selectBut').show() }else{ $('.selectBut').hide() }
+	var infoAuth = getAuth('积分管理','积分池','查看团队详情')
+	
+	layui.config({
+	    base: '../plugins/layui/modules/'
+	});
+	
+	layui.use(['layer', 'form', 'http', 'common','laydate','table'], function () {
+	    var layer = layui.layer,
+	        http = layui.http,
+	        form = layui.form,
+	        common = layui.common,
+			laydate = layui.laydate,
+			table = layui.table;
+			
+			//查询回显
+			http.get('admin/user/score/findAwardConfig',{},function(res){
+				var html = '<option value=""></option>';
+				var data = res.data.awardPoolConfigList;
+				for (var i = 0; i < data.length; i++) {
+					html += '<option value="' + data[i].ratio + '">' + toPercent(data[i].ratio) + '</option>'
+				}
+				$('select[name=ratio]').html(html);
+				form.render('select');
+			})
+			
+			//列表查询
+			var selectTable;
+			selectTable = http.table({
+				elem: '#selectList',
+				url: 'admin/user/score/listPageScorePool',
+				type: 'get',
+				id: 'selectTable',
+				cols: [[
+				   { title : '序号', align : 'center', width : 80, templet : function(d) { return d.LAY_INDEX } }
+				  ,{field:'partnerAccount', title: '合伙人', align : 'center',width: 180}
+				  ,{field:'quarter', title: '季度', align : 'center'}
+				  ,{field:'ratio', title: '可获得积分比例', align : 'center',width: 180,
+					  templet: function (d) {
+						return toPercent(d.ratio);
+					  }
+				  }
+				  ,{field:'teamPersonCount', title: '团队总人数', align : 'center'}
+				  ,{field:'currentQuarterMoney', title: '当前季度业绩', align : 'center',width: 180,
+						templet: function (d) {
+							return getFormatPrice(d.currentQuarterMoney);
+						}
+				  }
+				  ,{field:'totalMoney', title: '历史业绩总计', align : 'center',width: 180,
+						templet: function (d) {
+							return getFormatPrice(d.totalMoney);
+						}
+				  }
+				  ,{field:'score', title: '可获得积分', align : 'center',
+						templet: function (d) {
+							return getFormatPrice(d.score);
+						}
+				  }
+				  ,{field:'cleanStatus', title: '季度结算是否结束', align : 'center',width: 180}
+				  ,{field:'', title: '操作', align : 'center',fixed: 'right',width: 180,
+						templet: function (d) {
+							var html = '';
+							if(infoAuth)
+								html += '<a class="buttoncolorOne" lay-event="info" >查看团队详情</a>'
+							return html;
+						}
+				  }
+				]],
+				page: true
+			});
+			
+			var pre = new Date();
+			$("#quarterye").html(
+				'<option value=""></option>'+
+				'<option value="'+pre.getFullYear()+'">'+pre.getFullYear()+'</option>'+
+				'<option value="'+(pre.getFullYear()-1)+'">'+(pre.getFullYear()-1)+'</option>'+
+				'<option value="'+(pre.getFullYear()-2)+'">'+(pre.getFullYear()-2)+'</option>'
+			)
+			form.render();
+			
+			//监听季度年份
+			form.on('select(quarterye)', function(data){
+				if(data.value){
+					$("#quarterjd").html(
+							'<option value="4">第四季度</option>'+
+							'<option value="3">第三季度</option>'+
+							'<option value="2">第二季度</option>'+
+							'<option value="1">第一季度</option>'
+							);
+				}else{
+					$("#quarterjd").html(
+							'<option value=""></option>'
+					);
+				}
+				form.render();
+			});  
+			
+			//查询
+			form.on('submit(searchBth)', function (data) {
+				let _data = data.field,
+					param = _data;
+					if($("#quarterye").val()){
+						param.quarter = $("#quarterye").val()+'-'+$("#quarterjd").val();
+					}else{
+						param.quarter ='';
+					}
+					selectTable.reload({
+						page:{curr:1},
+						where: param
+					})
+			})
+			
+			table.on('tool(layTable)', function(obj){
+				var data = obj.data;
+				if(obj.event=='info'){
+					//查看团队详情
+					window.location.href="integral_team_info.html?id="+data.partnerUserId;
+				}
+			});
+    })
+	
+	//小数转化为分数
+	function toPercent(point){
+		if(point){
+			var percent = Number(point*100).toFixed(2);
+			percent+="%";
+			return percent;
+		}else{
+			return ''
+		}
+	}
+</script>
+</body>
+
+</html>

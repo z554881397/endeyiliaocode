@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>后台管理系统</title>
+    <link rel="stylesheet" href="../plugins/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../css/main.css">
+	<link type="text/css" rel="stylesheet" href="../plugins/font-awesome/css/font-awesome.min.css"/>
+</head>
+<style>
+	/* 商品规格 */
+	.addrule {
+	    width: 100%;
+	    padding: 10px;
+	    border: 1px solid #f2f2f2;
+	    box-sizing: border-box;
+	    font-size: 12px;
+	}
+	
+	.addrule .layui-input {
+	    height: 30px;
+	    line-height: 30px;
+	}
+	
+	.specificationDiv {
+	    overflow: hidden;
+	}
+	
+	.el {
+	    width: 100%;
+	    background: #f8f8f8;
+	    padding: 8px;
+	    box-sizing: border-box;
+	}
+	
+	.addSpecificationVal {
+	    height: 30px;
+	    display: flex;
+	    align-items: center;
+	    cursor: pointer;
+	    color: #1E9FFF;
+	}
+	
+	.inputListTab {
+	    /* display: flex; */
+	}
+	
+	.addlistf {
+	    background: #f8f8f8;
+	    padding: 8px 0;
+	    float: left;
+	    width: 100%;
+	    margin: 10px 0;
+	    position: relative;
+	}
+	
+	.layui-input-inline {
+	    position: relative;
+	}
+	
+	.close {
+	    position: absolute;
+	    top: -8px;
+	    right: -8px;
+	    font-size: 20px;
+	    opacity: 0.2;
+	}
+	
+	.addlistf .close {
+	    top: 10px;
+	    right: 15px;
+	
+	}
+	
+	.close:hover {
+	    opacity: 1;
+	    color: rgb(216, 74, 74);
+	}
+	
+	.inputListTab {
+	    float: left;
+	    width: 100%;
+	    margin: 10px 0;
+	}
+	.addcheckbox{
+		width: 20px!important;
+		margin-left: 15px;
+	}
+	.layui-form-item .layui-form-checkbox[lay-skin=primary] {
+	    margin-top:4px;
+	}
+	.Bigaddtab{
+		height:40px;
+		float: left;
+	}
+	/* 图片 */
+	.imgList {
+		width: 1000px;
+		min-width: 150px;
+		min-height: 150px;
+	}
+
+	.addImg {
+		width: 100px;
+		height: 30px;
+		border-radius: 4px;
+		border: 1px dashed #e6e6e6;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		cursor: pointer;
+		color: #666;
+		font-size: 12px;
+		margin-top:18px;
+	}
+
+	.addImg:hover {
+		border: 1px dashed #1e9fff;
+		background: #1e9fff;
+		color: #fff;
+	}
+
+	.addImg:hover i {
+		color: #fff;
+	}
+
+	.addImg i {
+		font-size: 14px;
+		color: #009688;
+		margin-right: 5px;
+	}
+
+	.mainpicture {
+		min-height: 100px;
+		/* overflow: hidden; */
+		margin: 15px 0;
+	}
+
+	.mainpicture > li {
+		/* width: 150px;
+		height: 150px; */
+		float: left;
+		margin-right: 10px;
+		background: #fff;
+		position: relative;
+		/*background: #5a8bff;*/
+	}
+
+	.mainpicture > li > img {
+		height: 150px;
+		width: 150px;
+		margin-left:10px;
+	}
+
+	.mainpicture > li > .layui-icon-close-fill {
+		position: absolute;
+		right: 0;
+	}
+
+	.delImg {
+		position: absolute;
+		right: 0;
+		font-size: 20px;
+		color: red;
+		opacity: 0.7;
+	}
+	.nullimg {
+		width: 150px;
+		height: 150px;
+		border: 1px dashed #ddd;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		box-sizing: border-box;
+	}
+
+	.nullimg > div {
+		text-align: center;
+		color: #ddd;
+	}
+
+	.nullimg > div > i {
+		text-align: center;
+		font-size: 30px;
+	}
+
+	.showDImg {
+		display: none;
+	}
+	.mainpicture .showDImg {
+		width: 700px;
+		height: auto;
+	}
+
+	.mainpicture .showDImg {
+		max-width: 700px;
+		width: auto;
+		height: auto;
+	}
+	.layui-upload-list img{
+		width:120px;
+		height:120px;
+		float: left;
+	}
+	.imgBut{
+		margin-left: 50px;
+		margin-top:81px;
+	}
+	.showDImg1 img{
+		height:150px;
+		width:150px;
+		margin-left:10px;
+	}
+	
+	/* #imglist img{
+		width:200px;
+		height:120px;
+		margin-left:10px;
+	} */
+	.imgdiv{
+		position:relative;
+		float:left;
+	}
+	.imgul{
+		width:150px;
+		position:absolute;
+		top:56px;
+		left:10px;
+		display:none;
+	}
+	.imgul li{
+		list-style:none;
+		width:100%;
+		height:30px;
+		background-color: rgba(100,149,237, .5);
+		color:#FFFFFF;
+		margin-top:2px;
+		text-align:center;
+		line-height:30px;
+		cursor:pointer;
+	}
+	/* 编辑器图片 */
+	.w-e-text img {
+	    /* height: 200px; */
+	}
+</style>
+
+<body>
+<div class="main">
+    <blockquote class="layui-elem-quote">添加商品</blockquote>
+    <div class="">
+		<form class="layui-form" action="">
+			<div class="layui-form-item">
+			  <label class="layui-form-label">商品名称：</label>
+			  <div class="layui-input-block">
+				 <input type="text" class="layui-input" name="name" placeholder="请输入商品名称" />
+			  </div>
+			</div>
+			<div class="layui-form-item">
+			    <label class="layui-form-label">商品规格：</label>
+				
+			    <div class="layui-input-block">
+			        <div class="addrule typeSpecification">
+			            <div class="el">
+			                <button type="button" class="layui-btn layui-btn-sm layui-btn-normal addSpecification"> + 添加规格</button>
+							<div class="myMore"></div>
+			            </div>
+			        </div>
+			    </div>
+			</div>
+			<div class="layui-form-item">
+			    <div class="layui-input-block">
+			        <button type="button" class="layui-btn layui-btn-sm layui-btn-normal"> <i class="fa fa-refresh" style="font-size: 13px!important"></i> 刷新规格项目表</button>
+			    </div>
+			</div>
+			<div class="layui-form-item layui-form-text">
+				<div class="layui-input-block mytable"></div>
+			</div>
+			
+			<div class="layui-form-item">
+				<label class="layui-form-label">商品图片：</label>
+				<div class="layui-input-inline">
+					<div class="imgList">
+						<ul class="mainpicture">
+							<li class="nullimg detailsImg">
+								<div> 
+									<i class="fa fa-cloud-upload"></i>
+									<p>上传商品图片</p>
+								</div>
+							</li>
+							<li class="showDImg1" style="display: none">
+								<!-- <img :src="bannerImg" alt=""> -->
+							</li>
+						</ul>
+						<input type="file" accept="image/*" id="bannerUp" multiple style="display: none;" name="">
+						<label class="addImg" for="bannerUp">
+							<i class="fa fa-cloud-upload"></i>上传
+						</label>
+						<div class="layui-form-mid layui-word-aux">可上传5张轮播图</div>
+					</div>
+				</div>
+			</div>
+			
+			<!-- <div class="layui-form-item layui-form-text">
+				<label class="layui-form-label">商品详情：</label>
+				<div class="layui-input-block">
+				  <textarea placeholder="请输入商品详情" class="layui-textarea" id="content"></textarea>
+				</div>
+			</div> -->
+			<div class="layui-form-item layui-form-text">
+			    <label class="layui-form-label">商品详情图</label>
+			    <div class="layui-input-block">
+			        <div id="demo1"></div>
+			        <div id="demo2"></div>
+			        
+			    </div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">状态：</label>
+				<div class="layui-input-block">
+				  <input type="radio" name="shelfStatus" value="1" title="上架" checked="">
+				  <input type="radio" name="shelfStatus" value="0" title="下架">
+				</div>
+			</div>
+			
+			<div class="layui-form-item rigth">
+			    <button type="button" class="layui-btn layui-btn-normal sure">确认</button>
+				<button type="button" class="layui-btn layui-btn-primary" onclick="window.history.back()">取消</button>
+			</div>
+		</form>
+		<div class="main_list">
+			<table class="layui-hide" id="noticeList" lay-filter="layTable"></table>
+		</div>
+	</div>
+</div>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../plugins/layui/layui.js"></script>
+<script src="../js/product.js"></script>
+<script src="../js/wangEditor.min.js"></script>
+<script>
+	layui.config({
+	    base: '../plugins/layui/modules/'
+	});
+	
+	layui.use(['layer', 'form', 'http', 'common','laydate','table','upload'], function () {
+	    var layer = layui.layer,
+	        http = layui.http,
+	        form = layui.form,
+	        common = layui.common,
+			upload = layui.upload,
+			table = layui.table;
+			
+			var specificationList = [];
+			var specificationList1 = '';
+			var speciGoodList = [];
+			
+			
+			//添加规格
+			$(document).on('click', '.addSpecification', function (event) {
+				console.log(event)
+				if (event && event.stopPropagation) {
+					event.stopPropagation();
+				} else if (window.event) {
+					window.event.cancelBubble = true;
+				}
+				var html = '<div class="specificationDiv">' +
+					'<div class="inputList addlistf">' +
+					'<div class="layui-input-inline" style="width: 85%">' +
+						'<input type="text" name="sName" autocomplete="off" placeholder="请输入规格名称" class="layui-input">' +
+					'</div>' +
+					'<div class="layui-input-inline" style="width: 10%">' +
+						'<a class="addSpecificationVal">添加规格值</a>' +
+					'</div>' +
+					'<i class="layui-icon layui-icon-close-fill close"></i>' +
+					'</div>' +
+					'<div class="inputList inputListTab">' +
+					'<div class="Bigaddtab">'+
+						'<div class="layui-input-inline addcheckbox">' +
+						'<input type="checkbox" name="checkName" lay-skin="primary" title="" lay-filter="seletCheck">'+
+						'</div>' +
+						'<div class="layui-input-inline addtab">' +
+						'<input type="text" name="sVal" autocomplete="off" placeholder="请输入规格值" class="layui-input"><i class="layui-icon layui-icon-close-fill close"></i>' +
+						'</div>' +
+					'</div>' +
+					'</div>' +
+					'</div>';
+				$('.myMore').append(html);
+				form.render();
+				var a = {
+					name: '',
+					p_enums: ['']
+				}
+				specificationList.push(a);
+			})
+			
+			$('.addSpecification').trigger("click");
+			specificationList1 = testProduct(specificationList);//调用product.js中方法
+			specification(specificationList1)//规格明细表格
+			
+			//添加规格值
+			$(document).on('click', '.addSpecificationVal', function (event) {
+			    if (event && event.stopPropagation) {
+			        event.stopPropagation();
+			    } else if (window.event) {
+			        window.event.cancelBubble = true;
+			    }
+			    var tabhtml = 
+					'<div class="Bigaddtab">'+
+						'<div class="layui-input-inline addcheckbox">' +
+							'<input type="checkbox" name="checkName" lay-skin="primary" title="" lay-filter="seletCheck">'+
+						'</div>' +
+						'<div class="layui-input-inline addtab">' +
+							'<input type="text" name="sVal" autocomplete="off" placeholder="请输入规格值" class="layui-input"><i class="layui-icon layui-icon-close-fill close"></i>' +
+						'</div>'+
+					'</div>';
+			    var index = Number($('.addSpecificationVal').index(this));
+			    specificationList[index].p_enums.push('');
+			    $(this).parent().parent().parent().find('.inputListTab').append(tabhtml);
+			    form.render();
+			})
+			
+			//删除规格 start
+			$(document).on('click', '.addlistf .close', function (event) {
+				 console.log(event);
+				 if (event && event.stopPropagation) {
+					 event.stopPropagation();
+				 } else if (window.event) {
+					 window.event.cancelBubble = true;
+				 }
+				 var index = Number($('.addlistf .close').index(this));
+				 $('.specificationDiv').eq(index).remove();
+				 slist();
+			});
+			//删除规格 end
+
+			//删除规格项 start
+			$(document).on('click', '.inputListTab .close', function (event) {
+				 console.log(event);
+				 if (event && event.stopPropagation) {
+					 event.stopPropagation();
+				 } else if (window.event) {
+					 window.event.cancelBubble = true;
+				 }
+				 var num = Number($('.specificationDiv').index($(this).parent().parent()
+					 .parent().parent()));
+				 if ($('.specificationDiv').eq(num).find('.Bigaddtab').length > 1) {
+					 var index = Number($('.Bigaddtab .close').index(this));
+					 $('.Bigaddtab').eq(index).remove();
+				 } else {
+					 $(this).parent().parent().parent().parent().remove();
+				 }
+				 slist()
+			});
+			//删除规格项 end
+			
+			//更新时重新获取specificationList
+			function slist(){
+				depositGoodList(); //更新前存值
+				specificationList = [];
+				var inputList = $('.specificationDiv');
+				console.log(inputList.length);
+				for(var i=0;i<inputList.length;i++){
+					
+					console.log(specificationList);
+					var a = {
+						name: '',
+						p_enums: []
+					}
+					a.name = inputList.eq(i).find('input[name=sName]').val();
+					var inputVal = inputList.eq(i).find('input[name=sVal]');
+					var checkVal = inputList.eq(i).find('[name=checkName]');
+					var checkNumber = inputList.eq(i).find('[name=checkName]:checked')
+					if(checkNumber.length>0){
+						for(var j=0;j<inputVal.length;j++){
+							//勾选才入明细表格
+							if(checkVal.eq(j).is(':checked')){
+								a.p_enums.push(inputVal.eq(j).val());
+							}
+						}
+					}else{
+						a.p_enums = [''];
+					}
+					specificationList.push(a);
+				}
+				if(specificationList.length != 0){
+					specificationList1 = testProduct(specificationList);//调用product.js中方法
+				}
+				specification(specificationList1)//规格明细表格
+			}
+			
+			//规格明细表格
+			function specification(specificationList1){
+				
+				if(specificationList.length>0){
+					
+					var tableH = '<table class="layui-table inputTable"><thead><tr>';
+											
+					for(var i=0;i<specificationList.length;i++){
+						tableH += '<th>'+specificationList[i].name+'</th>'
+					}
+					tableH += '<th>会员价</th><th>售价</th><th>市场价</th><th>商品编号</th></tr></thead><tbody>';
+											
+					for(var j=0;j<specificationList1[0].length;j++){
+						tableH += '<tr>';
+						for(var k = 0;k<specificationList1.length;k++){
+							tableH += '<td>'+specificationList1[k][j]+'</td>';
+							if(k == specificationList1.length-1){
+								tableH += '<td><input type="number" name="vipPrice" autocomplete="off" class="layui-input"/></td><td><input type="number" name="price" autocomplete="off" class="layui-input"/></td><td><input type="number" name="marketPrice" autocomplete="off" class="layui-input"/></td><td><input type="text" name="goodNo" autocomplete="off" class="layui-input"/></td>';  
+							}
+								  
+						}
+						tableH += '</tr>';
+					}     
+
+					tableH += '</tbody></table>';
+
+					$('.mytable').html(tableH)
+				}else{
+					$('.mytable').html('')
+				}
+				displayGoodList(); //更新后返值
+			}
+			
+			//存规格信息
+			function depositGoodList(){
+				speciGoodList = [];
+				for(var x=0;x<specificationList1[0].length;x++){
+					var pp = {
+						"goodNo":$('td input[name=goodNo]').eq(x).val(),
+						"marketPrice":$('td input[name=marketPrice]').eq(x).val(),
+						"price":$('td input[name=price]').eq(x).val(),
+						"vipPrice":$('td input[name=vipPrice]').eq(x).val(),
+						"goodSpecParamsList":[]                    //商品的规格
+					};
+					for(var y=0;y<specificationList1.length;y++){
+						pp.goodSpecParamsList.push(specificationList1[y][x]);
+					}
+					speciGoodList.push(pp)
+				}
+			}
+			
+			//回显已有规格信息
+			function displayGoodList(){
+				var num = 0;
+				$('.inputTable th').each(function(i){
+					num++;				  
+				});
+				num = num - 4;
+			    $('.inputTable tr').each(function(i){        // 遍历 tr
+				  var arr = [];
+				  $(this).children('td').each(function(j){  // 遍历 tr 的各个 td
+					  if(j<num){
+						arr.push($(this).text());
+					  }
+				  });
+				  var valList = getVal(arr);
+				  if(valList){
+					  var tdlength = $(this).children('td').length;               
+					  $(this).children('td').each(function(j){                    // 遍历 tr 的各个 td 回显规格详情
+						  if((j+1) == tdlength){
+								$(this).find("input").val(valList.goodNo);        // 商品编号
+						  }
+						  if((j+1) == (tdlength-1)){
+								$(this).find("input").val(valList.marketPrice);   // 市场价
+						  }
+						  if((j+1) == (tdlength-2)){
+						  		$(this).find("input").val(valList.price);         // 售价
+						  }
+						  if((j+1) == (tdlength-3)){
+						  		$(this).find("input").val(valList.vipPrice);      // 会员价
+						  }
+					  });
+				  }
+			    });
+			}
+			
+			//比对获取值
+			function getVal(arr){
+				var list = '';
+				$.each(speciGoodList, function(index,data) {
+					if(JSON.stringify(arr) == JSON.stringify(data.goodSpecParamsList)){
+						list = data;
+						return false	
+					}
+				});
+				return list;
+			}
+			
+			
+			//监听input
+			$(document).on("input",".typeSpecification input", function () {
+				var flag = false
+				if($(this).attr('name')=='sName'){
+					for(var i=0;i<specificationList.length;i++){
+						if($(this).val() == specificationList[i].name){
+							layer.msg('规格名称【'+$(this).val()+specificationList[i].name+'】重复')
+							flag = true
+							break
+						}
+					}
+					setTimeout(function(){
+						if(!flag){
+							slist()//获取specificationList
+						}
+					
+					},800)
+				}else if($(this).attr('name')=='sVal'){
+					var mylong = $(this).parent().parent().find('[name="checkName"]:checked').length;
+					if(mylong>0){
+						var num = $(this).parent().parent().parent().parent().index()
+						// num = num - 1
+						for(var i=0;i<specificationList[num].p_enums.length;i++){
+							if($(this).val() == specificationList[num].p_enums[i]){
+								console.log(specificationList[num].p_enums[i])
+								layer.msg('规格值【'+$(this).val()+'】重复')
+								flag = true
+								break
+							}
+						}
+						setTimeout(function(){
+							if(!flag){
+								slist()//获取specificationList
+						
+							}
+						
+						},800)
+					}
+				}
+				
+			});
+			
+			//监听复选框
+			form.on('checkbox(seletCheck)', function(data){
+			  
+			  if(data.elem.checked){
+				  var flag = false
+				  var num = $(this).parent().parent().parent().parent().index()
+				  // num = num - 1
+				  var myVal = $(this).parent().parent().find('input[name=sVal]').val();
+				  console.log(myVal);
+				  for(var i=0;i<specificationList[num].p_enums.length;i++){
+				  	if(myVal == specificationList[num].p_enums[i]){
+				  		layer.msg('规格值【'+myVal+'】重复')
+				  		flag = true
+				  		break
+				  	}
+				  } 
+				  slist()//获取specificationList
+			  }else{
+				  slist()//获取specificationList
+			  } 
+			});  
+			
+			// -------------------------------- 图片 ---------------------------------						
+			//上传商品图
+			$('#bannerUp').on('change', function () {
+				var imgNum = $(".showDImg1").children("div").length;
+				if(imgNum>4){
+					  layer.msg('最多只能上传5张图片')
+					  return false
+				}
+				
+				$('.showDImg1').show().siblings('li').hide();
+				var file = this.files[0],
+					fr = new FileReader(),
+					formData = new FormData();
+				formData.append('file', file);
+				fr.onload = function () {
+					let _img = $('.showDImg1').find('img');
+					_img.css({
+						'width': '150px',
+						'hight': '150px'
+					});
+				};
+	
+				fr.readAsDataURL(file);
+				//上传图片并返回图片地址
+				formData.append('fileType', 'img');
+				formData.append('isfileName', false);
+				http.upLoadPost('system/upload', formData,
+					function (res) {
+						if (res.code == 200) {
+							console.log(res.data);
+							var shopBannerPicture = res.data;
+							$('.nullimg').eq(2).hide()
+							
+							var imgId = http.getUUID();
+							var html = '<div id="div'+imgId+'" class="imgdiv">'+
+												 '<img src="'+shopBannerPicture+'" alt="'+ file.name +'" id="proimg'+imgId+'" style="width:150px;height:150px">'+
+												 '<ul class="imgul" id="span'+imgId+'">'+
+													'<li onclick="deleteimg(\''+imgId+'\')">移除</li>'+
+												 '</ul>'+
+										'</div>';
+							setTimeout(function(){
+								  $('.showDImg1').append(html);
+								  // $('#proimg'+imgId+'').attr('src',shopBannerPicture);
+								  $('#div'+imgId+'').attr('onmouseover','showOperation(\''+imgId+'\')');
+								  $('#div'+imgId+'').attr('onmouseout','hideOperation(\''+imgId+'\')');
+							},200);
+							layer.msg('图片上传成功！', {
+								time: 500
+							});
+						} else {
+							layer.msg('图片上传失败！');
+							return
+						}
+					}
+				)
+			});
+			
+			//-------------------------------- 编辑器 ---------------------------------
+			
+			var E = window.wangEditor;
+			var editor1 = new E('#demo1');
+			// 自定义菜单配置
+			editor1.customConfig.menus = [
+			    'head',  // 标题
+			    'bold',  // 粗体
+			    'fontSize',  // 字号
+			    'fontName',  // 字体
+			    'italic',  // 斜体
+			    'underline',  // 下划线
+			    'strikeThrough',  // 删除线
+			    'foreColor',  // 文字颜色
+			    'backColor',  // 背景颜色
+			    'list',  // 列表
+			    'justify',  // 对齐方式
+			    'quote',  // 引用
+			    'image',  // 插入图片
+			    'undo',  // 撤销
+			    'redo'  // 重复
+			]
+			
+			editor1.customConfig.showLinkImg = false;  // 隐藏“网络图片”tab
+			editor1.customConfig.uploadImgServer = TUrl+'system/upload'  // 上传图片到服务器
+			editor1.customConfig.uploadImgMaxSize = 3 * 1024 * 1024; // 将图片大小限制为 3M
+			editor1.customConfig.uploadImgHooks1 = {
+			    success:function(files){
+			        var formData = new FormData();
+			        formData.append('file', files[0]);
+			        http.upLoadPost('system/upload',formData,function(res){
+			            if(res.code == 200){
+							setTimeout(function(){
+								editor1.txt.append('<img src="' + res.data+'" alt=""/>')
+							},200);
+			            }
+			        })
+			    }
+			}
+			
+			editor1.create();//建立编辑器
+			
+			
+			// 确定 提交商品的数据
+			$(".sure").click(function () {
+				var name = $('input[name=name]').val();//商品名称
+				var content = editor1.txt.html();//商品详情
+				var shelfStatus = $('input[name=shelfStatus]:checked').val();
+				
+				if ($.trim(name) == "") {
+					layer.msg('商品名称不能为空')
+					$("input[name='name']").focus();
+					return false;
+				}
+
+				if(specificationList.length==0){//规格判断
+					layer.msg('请编写规格');
+					return;
+				}
+				
+				if(!content){//商品详情
+				    layer.msg('请编辑商品详情');
+				    return;
+				}
+				var productState = true;
+				var productSpecParamsList = [];                   //规格
+				for(var x=0;x<specificationList.length;x++){
+					if(!specificationList[x].name || specificationList[x].name==''){
+						layer.msg('规格名称不能为空');
+						productState = false;
+						break;
+					}
+					var list= { specName:specificationList[x].name }
+					var specValueList = [];                       //规格值
+					for(var y=0;y<specificationList[x].p_enums.length;y++){
+						var val = specificationList[x].p_enums[y];
+						if(!val || val==''){
+							layer.msg('规格值不能为空');
+							productState = false;
+							break;
+						}
+						var val_list = {
+							value:val
+						}
+						specValueList.push(val_list);
+					}
+					list.specValueList = specValueList;
+					productSpecParamsList.push(list);
+				}
+				
+				if(!productState){
+					return
+				}
+				
+				var goodState = true;
+				var goodList = [];                                 //规格明细
+				for(var x=0;x<specificationList1[0].length;x++){
+					var pp = {
+						"goodNo":$('td input[name=goodNo]').eq(x).val(),
+						"marketPrice":$('td input[name=marketPrice]').eq(x).val(),
+						"price":$('td input[name=price]').eq(x).val(),
+						"vipPrice":$('td input[name=vipPrice]').eq(x).val(),
+						"goodSpecParamsList":[]                    //商品的规格
+					};
+					
+					if(!$('td input[name=vipPrice]').eq(x).val() || $('td input[name=vipPrice]').eq(x).val()==''){
+						layer.msg('会员价不能为空');
+						goodState = false;
+						break;
+					}
+					if(!$('td input[name=price]').eq(x).val() || $('td input[name=price]').eq(x).val()==''){
+						layer.msg('售价不能为空');
+						goodState = false;
+						break;
+					}
+					if(!$('td input[name=marketPrice]').eq(x).val() || $('td input[name=marketPrice]').eq(x).val()==''){
+						layer.msg('市场价不能为空');
+						goodState = false;
+						break;
+					}
+					if(!$('td input[name=goodNo]').eq(x).val() || $('td input[name=goodNo]').eq(x).val()==''){
+						layer.msg('商品编号不能为空');
+						goodState = false;
+						break;
+					}
+					
+					
+					for(var y=0;y<specificationList1.length;y++){
+						var e = {
+							specName: specificationList[y].name,
+							specValue: specificationList1[y][x],
+						}
+						pp.goodSpecParamsList.push(e);
+					}
+					goodList.push(pp)
+				}
+				
+				if(!goodState){
+					return
+				}
+				
+				 var smallPic = "";
+				 var img = $(".showDImg1").find("img");
+				 for (var i = 0; i < img.length; i++) {
+					 var src = img[i].src;
+					 smallPic += src+",";
+				 }
+				 smallPic = smallPic.substring(0,smallPic.lastIndexOf(','));
+				 
+				 if(smallPic==""){
+					layer.msg('请上传图片');
+					 return;
+				 }
+				
+				var param = {
+					name:name,                                      //商品名称
+					productSpecParamsList:productSpecParamsList,    //规格与规格值
+					goodList:goodList,
+					smallPic:smallPic,
+					content:content,
+					shelfStatus:shelfStatus
+				} 
+
+				http.postJSON('admin/product/add',JSON.stringify(param),function(res){
+					if(res.code == 200){
+						layer.msg('保存成功', {icon:1 , time: 2000}, function(){
+							location.href='commodity_list.html';
+						});
+					}else{
+						layer.msg(res.msg)
+					}
+				})
+
+			});
+			
+    })
+	
+	//显示图片操作
+	function showOperation(imgId){
+		$('#span'+imgId+'').show();
+	}
+	//隐藏图片操作
+	function hideOperation(imgId){
+		$('#span'+imgId+'').hide();
+	}
+	//图片移除
+	function deleteimg(imgId){
+		$('#div'+imgId+'').remove();		
+	}
+</script>
+</body>
+
+</html>

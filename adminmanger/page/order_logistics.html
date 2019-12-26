@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>物流信息</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../plugins/layui/css/layui.css" media="all"/>
+    <!-- <link rel="stylesheet" href="../css/comments.css" media="all"> -->
+	<link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../css/font-awesome.min.css">
+    <style>
+        .layui-card {
+            padding: 15px;
+            display: none;
+        }
+
+    </style>
+</head>
+
+<body>
+<div class="main">
+    <div>
+        <blockquote class="layui-elem-quote">
+            <span>订单跟踪</span>
+            <button class="layui-btn layui-btn-sm btnright btn-blockquote" onclick="window.history.back()">返回</button>
+        </blockquote>
+    </div>
+    <div class="layui-card">
+        <ul class="layui-timeline" id="tLine">
+            <li class="layui-timeline-item">
+                <i class="layui-icon layui-timeline-axis">&#xe63f;</i>
+                <div class="layui-timeline-content layui-text">
+                    <h6 class="layui-timeline-title"></h6>
+                    <p class="lienTime"></p>
+                </div>
+            </li>
+        </ul>
+    </div>
+</div>
+
+<script type="text/javascript" src="../plugins/layui/layui.js"></script>
+<script src="../js/jquery.min.js"></script>
+
+<script>
+    layui.config({
+        base: '../plugins/layui/modules/',
+    }).use(['http', 'form', 'table', 'laydate'], function () {
+        var http = layui.http,
+            form = layui.form,
+            laydate = layui.laydate,
+            table = layui.table;
+
+        var orderNo = http.getPid('id');
+
+        http.get('admin/order/findExpressInfo', {
+            orderNo: orderNo
+        }, function (res) {
+            if (res.code == '200') {
+                showTimeLine(res.data.tracesList)
+            }
+        });
+        function showTimeLine(data) {
+            var tLine = $('#tLine');
+            if (data.length != 0 && data != '[]') {
+                // data.reverse();
+                for (var i = 0; i < data.length; i++) {
+                    var lineElem = '            <li class="layui-timeline-item">\n' +
+                        '                <i class="layui-icon layui-timeline-axis">&#xe63f;</i>\n' +
+                        '                <div class="layui-timeline-content layui-text">\n' +
+                        '                    <h6 class="layui-timeline-title"></h6>\n' +
+                        '                    <p class="lienTime"></p>\n' +
+                        '                </div>\n' +
+                        '            </li>\n';
+                    $('.layui-timeline-title').eq(i).html(data[i].AcceptStation);
+                    $('.lienTime').eq(i).html(data[i].AcceptTime);
+                    tLine.append(lineElem);
+                    $('.layui-card').show();
+                }
+            } else {
+                $('.layui-card').hide();
+                layer.msg('暂无快递信息！',
+                    {
+                        time: 1500
+                    }
+                )
+            }
+        }
+
+    });
+</script>
+
+</body>
+
+</html>

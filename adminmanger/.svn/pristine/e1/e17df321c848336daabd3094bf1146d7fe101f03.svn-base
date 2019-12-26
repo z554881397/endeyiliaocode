@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+	<title>登陆</title>
+	<link rel="shortcut icon" href="../img/cloud.jpg" type="image/x-icon" />
+	<link rel="stylesheet" href="../plugins/layui/css/layui.css" media="all" />
+	<link rel="stylesheet" href="../css/login.css" />
+	<script type="text/javascript">
+		if (top.location != location) {
+			top.location.reload();
+		}
+	</script>
+</head>
+
+<body class="beg-login-bg">
+	<div class="beg-login-box">
+		<header>
+			<p>
+				<span></span>
+				<span>恩德生态后台管理系统</span>
+			</p>
+		</header>
+		<div class="beg-login-main">
+			<div class="layui-form">
+				<div class="layui-form-item">
+					<label class="beg-login-icon">
+						<i class="layui-icon">&#xe66f;</i>
+					</label>
+					<input type="text" name="account" lay-verify="account" autocomplete="off" placeholder="请输入登录账号"
+						class="layui-input" value="">
+				</div>
+				<div class="layui-form-item">
+					<label class="beg-login-icon">
+						<i class="layui-icon">&#xe673;</i>
+					</label>
+					<input type="password" name="password" lay-verify="password" autocomplete="off" placeholder="请输入登录密码"
+						class="layui-input" value="">
+				</div>
+				<div class="layui-form-item" style="color: black;">
+					<label class="beg-login-icon">
+						<i class="layui-icon">&#xe679;</i>
+					</label>
+					<div class="layui-input-inline" style="width:240px">
+						<input type="text" name="verifyCodeValue" lay-verify="verifyCodeValue" autocomplete="off" placeholder="请输入图形验证码"
+							class="layui-input">
+					</div>
+					<img class="codeImg" src="" alt="">
+				</div>
+				<div class="layui-form-item">
+					<button class="layui-btn layui-btn-primary layui-btn-fluid" lay-submit lay-filter="login"
+						id="submit_btn">
+						登陆
+					</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<script type="text/javascript" src="../js/jquery.min.js"></script>
+	<!-- <script type="text/javascript" src="../plugins/jquery/jquery.cookie.js"></script> -->
+	<script type="text/javascript" src="../plugins/layui/layui.js"></script>
+	<script type="text/javascript">
+		layui.config({
+			base: '../plugins/layui/modules/'
+		});
+		layui.use(['layer', 'form', 'http', 'md5'], function () {
+			var layer = layui.layer,
+				http = layui.http,
+				device = layui.device(),
+				form = layui.form,
+				md5 = layui.md5;
+			//每刷新一次页面（每次进入登录页面都只会生成一个唯一的客户端唯一标识）
+			var clientId = http.getUUID();
+			//阻止IE9以下访问
+			if (device.ie && device.ie < 9) {
+				layer.alert('最低支持ie9，您当前使用的是 IE' + device.ie + '！');
+				return;
+			}
+		
+			$('.codeImg').attr('src', TUrl + "system/verifyCode?key=" + clientId);
+			$(".codeImg").on("click", function () {
+				clientId = http.getUUID();
+				$('.codeImg').prop('src', TUrl + "system/verifyCode?key=" + clientId);
+			});
+
+			//登录
+			form.on('submit(login)', function (data) {
+				var obj = data.field;
+				if ($.trim(obj.account) == "") {
+					layer.tips('账号不能为空!', 'input[name="account"]', {
+						tips: [2, '#3595CC'],
+						time: 2000
+					});
+					$("input[name='account']").focus();
+					return false;
+				}
+				if ($.trim(obj.password) == "") {
+					layer.tips('密码不能为空!', 'input[name="password"]', {
+						tips: [2, '#3595CC'],
+						time: 2000
+					});
+					$("input[name='password']").focus();
+					return false;
+				}
+				if ($.trim(obj.verifyCodeValue) == "") {
+					layer.tips('验证码不能为空!', 'input[name="verifyCodeValue"]', {
+						tips: [4, '#3595CC'],
+						time: 2000
+					});
+					$("input[name='verifyCodeValue']").focus();
+					return false;
+				}
+				obj.verifyCodeKey = clientId;
+				http.post1('admin/admin/login', obj, function (data) {
+					if (data.success) {
+						localStorage.setItem('ende-time', new Date().getTime());
+						localStorage.setItem('ende-token', data.data.token);
+						localStorage.setItem('ende-user', JSON.stringify(data.data.admin));
+						localStorage.setItem('ende-auth',JSON.stringify(data.data.authList))
+						localStorage.setItem('ende-menu',JSON.stringify(menulist(data.data.authList)))
+						
+						window.location.href = "../index.html";
+					} else {
+						layer.msg(data.msg);
+					}
+				});
+				return false;
+			});
+			$(document).keyup(function (event) {
+				if (event.keyCode == 13) {
+					$("#submit_btn").click();
+				}
+			});
+			
+			function menulist(endeAuth){
+				if(endeAuth){
+					for(var i=0;i<endeAuth.length;i++){
+						if(endeAuth[i].name=='商品管理' || endeAuth[i].name=='订单管理' || endeAuth[i].name=='提现记录'){
+							endeAuth[i].children = [];
+						}
+					}
+				}
+				return endeAuth;
+			}
+		});
+		
+		
+	</script>
+</body>
+
+</html>

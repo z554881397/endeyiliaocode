@@ -1,0 +1,106 @@
+/**
+ * 微信js-sdk
+ * 参考文档：https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1421141115
+ */
+import wx from 'weixin-js-sdk'
+import api from '../../api/index.js'
+const wxApi = {
+  /**
+  * [wxRegister 微信Api初始化]
+  * @param  {Function} callback [ready回调函数]
+  */
+  wxRegister (callback) {
+    // 这边的接口请换成你们自己的
+    api.jsApiTicketSign({
+        url: window.location.href.split('#')[0]
+    }).then(res =>{
+      let data = res.data // PS: 这里根据你接口的返回值来使用
+      wx.config({
+        debug: false, // 开启调试模式
+        appId: data.appId, // 必填，公众号的唯一标识
+        timestamp: data.timeStamp, // 必填，生成签名的时间戳
+        nonceStr: data.nonceStr, // 必填，生成签名的随机串
+        signature: data.sign, // 必填，签名，见附录1
+        jsApiList: ["onMenuShareAppMessage","previewImage","chooseWXPay"] // 必填，需要使用的JS接口列表，所有JS接口列表见附录2
+      })
+    })
+    wx.ready((res) => {
+      // 如果需要定制ready回调方法
+      if (callback) {
+        callback()
+      }
+    })
+  },
+  /**
+  * [ShareTimeline 微信分享到朋友圈]
+  * @param {[type]} option [分享信息]
+  * @param {[type]} success [成功回调]
+  * @param {[type]} error   [失败回调]
+  */
+  ShareTimeline (option) {
+    wx.onMenuShareTimeline({
+      title: option.title, // 分享标题
+      link: option.link, // 分享链接
+      imgUrl: option.imgUrl, // 分享图标
+      success () {
+        // 用户成功分享后执行的回调函数
+        option.success()
+      },
+      cancel () {
+        // 用户取消分享后执行的回调函数
+        option.error()
+      }
+    })
+  },
+  /**
+  * [ShareAppMessage 微信分享给朋友]
+  * @param {[type]} option [分享信息]
+  * @param {[type]} success [成功回调]
+  * @param {[type]} error   [失败回调]
+  */
+  ShareAppMessage (option) {
+    wx.onMenuShareAppMessage({
+      title: option.title, // 分享标题
+      desc: option.desc, // 分享描述
+      link: option.link, // 分享链接
+      imgUrl: option.imgUrl, // 分享图标
+      success () {
+        // 用户成功分享后执行的回调函数
+        option.success()
+      },
+      cancel () {
+        // 用户取消分享后执行的回调函数
+        option.error()
+      }
+    })
+  },
+  /**
+  * [previewImage 微信预览图片]
+  * @param {[type]} option [预览图片内容]
+  */
+  previewImage (option) {
+    wx.previewImage({
+      current: option.current, // 当前显示图片的http链接
+      urls: option.urls // 需要预览的图片http链接列表
+    })
+  },
+  /**
+  * [chooseWXPay 微信支付]
+  * @param {[type]} option [微信支付配置]
+  * @param {[type]} success [成功回调]
+  */
+ chooseWXPay (option) {
+  wx.chooseWXPay({
+    timestamp: option.timestamp, // 支付签名时间戳，注意微信jssdk中的所有使用timestamp字段均为小写。但最新版的支付后台生成签名使用的timeStamp字段名需大写其中的S字符
+    nonceStr: option.nonceStr, // 支付签名随机串，不长于 32 位
+    package: option.package, // 统一支付接口返回的prepay_id参数值，提交格式如：prepay_id=\*\*\*）
+    signType: option.signType, // 签名方式，默认为'SHA1'，使用新版支付需传入'MD5'
+    paySign: option.paySign, // 支付签名
+    success: function (res) {
+      // 支付成功后的回调函数
+      option.success()
+    }
+  });
+ }
+}
+export default wxApi

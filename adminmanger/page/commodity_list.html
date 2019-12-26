@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>商品管理</title>
+    <link rel="stylesheet" href="../plugins/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+
+<body>
+<div class="main">
+    <blockquote class="layui-elem-quote">商品列表</blockquote>
+    <div class="layui-card">
+        <div class="layui-card-header layuiadmin-card-header-auto">
+			<form class="layui-form" action="">
+				<div class="layui-form-item layui-inline">
+				  <label class="layui-form-label">商品编号：</label>
+				  <div class="layui-input-inline">
+					 <input type="text" class="layui-input" name="productNo" placeholder="请输入商品编号" />
+				  </div>
+				</div>
+				<div class="layui-form-item layui-inline">
+				  <label class="layui-form-label">商品名称：</label>
+				  <div class="layui-input-inline">
+					 <input type="text" class="layui-input" name="productName" placeholder="请输入商品名称" />
+				  </div>
+				</div>
+				<div class="layui-form-item layui-inline select-but">
+					<button class="layui-btn selectBut" lay-submit lay-filter="searchBth" type="button">查询</button>
+					<button class="layui-btn addAccount"  type="button">添加</button>
+				</div>
+			</form>
+		</div>
+		<div class="main_list">
+			<table class="layui-hide" id="selectList" lay-filter="layTable"></table>
+		</div>
+	</div>
+</div>
+<script type="text/html" id="state">
+    <!-- 状态 -->
+    <input type="checkbox" name="sex" value="{{d.id}}" lay-skin="switch" lay-text="上架|下架" lay-filter="statusDemo" {{ d.shelfStatus==
+           1 ? 'checked' : '' }} {{stateAuth?'':'disabled="disabled"'}}>
+</script>
+<script type="text/html" id="toolbarDemo">
+	<div class="layui-btn-container toolbarDemo">
+		<button class="layui-btn layui-btn-sm" lay-event="normal" {{stateAuth?"":"style='display:none'"}}>上架</button>
+		<button class="layui-btn layui-btn-sm" lay-event="prohibit" {{stateAuth?"":"style='display:none'"}}>下架</button>
+		<button class="layui-btn layui-btn-sm" lay-event="delete" {{deteleAuth?"":"style='display:none'"}}>删除</button>
+	</div>
+</script>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../plugins/layui/layui.js"></script>
+<script type="text/javascript" src="../js/auth.js"></script>
+<script>
+	
+	// 按钮权限
+	if(getAuth('商品管理','查询')){ $('.selectBut').show() }else{ $('.selectBut').hide() }
+	if(getAuth('商品管理','添加')){ $('.addAccount').show() }else{ $('.addAccount').hide() }
+	
+	var infoAuth = getAuth('商品管理','查看'),
+		updateAuth = getAuth('商品管理','修改'),
+	    deteleAuth = getAuth('商品管理','删除'),
+		stateAuth = getAuth('商品管理','上下架');
+		
+	layui.config({
+	    base: '../plugins/layui/modules/'
+	});
+	
+	layui.use(['layer', 'form', 'http', 'common','laydate','table'], function () {
+	    var layer = layui.layer,
+	        http = layui.http,
+	        form = layui.form,
+	        common = layui.common,
+			laydate = layui.laydate,
+			table = layui.table;
+			
+			//日期范围
+		    laydate.render({
+				elem: '#test6'
+				,range: true
+		    });
+			
+			//列表查询
+			var selectTable;
+			selectTable = http.table({
+				elem: '#selectList',
+				url: 'admin/product/listPage',
+				type: 'get',
+				id: 'selectTable',
+				toolbar: '#toolbarDemo',
+				cols: [[
+				   {type:'checkbox'}
+				  ,{field:'account', title: '商品图片', align : 'center',event: 'imgclick',
+						templet: function (d) {
+							var img = d.smallPic.split(",");
+							return '<div ><img src="'+img[0]+'" alt="" width="50px" height="30px"></div>'
+						}
+				  }
+				  ,{field:'id', title: '商品编号', align : 'center',width: 200}
+				  ,{field:'name', title: '商品名称', align : 'center',width: 180}
+				  ,{field:'marketPriceRange', title: '市场价', align : 'center',width: 150}
+				  ,{field:'priceRange', title: '售价', align : 'center'}
+				  ,{field:'vipPriceRange', title: '会员价', align : 'center'}
+				  ,{field:'shareAward', title: '分享奖', align : 'center'} //待完善
+				  ,{field:'indirectAward', title: '间接奖', align : 'center'} //待完善
+				  ,{field:'sortNumber', title: '排序', align : 'center',edit: 'text'}
+				  ,{field:'', title: '状态', align : 'center', templet: "#state"}
+				  ,{field:'', title: '操作', align : 'center', width: 160,fixed: 'right',
+						templet: function (d) {
+							var html = '';
+								if(infoAuth)
+								html+='<a class="buttoncolor" lay-event="info" >查看</a>' 
+								if(updateAuth)
+								html+='<a class="buttoncolor" lay-event="edit" >修改</a>'
+								if(deteleAuth)
+								html+='<a class="buttoncolorOne" lay-event="delete" >删除</a>'
+							return html;
+						}
+				  }
+				]],
+				page: true,
+				height: 523,
+			});
+			
+			//查询
+			form.on('submit(searchBth)', function (data) {
+				let _data = data.field,
+					param = _data;
+				selectTable.reload({
+					page:{curr:1},
+					where: param
+				})
+			})
+			
+			//监听排序编辑
+			table.on('edit(layTable)', function(obj){
+				var value = obj.value //得到修改后的值
+				,data = obj.data //得到所在行所有键值
+				//获取编辑前的值
+				var selector = obj.tr.selector+' td[data-field="'+obj.field+'"] div';
+				var oldtext = $(selector).text();
+				
+				var reg = /^[+]{0,1}(\d+)$/;
+				if (!reg.test(value)) {
+					layer.msg('排序值只能为正整数');
+					// 返回值
+					$(obj.tr.selector + ' td[data-field="' + obj.field + '"] input').val(oldtext);
+					return
+				}
+				http.post('admin/product/sortNumber/update', {id:data.id,sortNumber:value},function (res) {
+					if(res.code=='200'){
+						layer.msg('操作成功！');
+					}else{
+						layer.msg(res.msg);
+						$(obj.tr.selector + ' td[data-field="' + obj.field + '"] input').val(oldtext);
+					}
+				})
+				
+			});
+			
+			//添加
+			$('.addAccount').on('click', function () {
+				window.location.href = 'commodity_add.html';
+			});
+			
+			//状态 0下架 1上架
+			form.on('switch(statusDemo)', function (obj) {
+				var state = obj.elem.checked ? 1 : 0;
+				var data = {
+					productId: obj.value,
+					state:state
+				}
+				http.post('admin/product/shelfStatus/update', data,function (res) {
+					if(res.code=='200'){
+						layer.msg('操作成功！');
+					}else{
+						layer.msg(res.msg);
+					}
+			   })
+			});
+			
+			table.on('tool(layTable)', function(obj){
+				var data = obj.data;
+				if(obj.event=='info'){
+					//查看
+					window.location.href="commodity_info.html?id="+data.id;
+				}else if(obj.event=='edit'){
+					//修改
+					window.location.href="commodity_edit.html?id="+data.id;
+				}else if(obj.event=='delete'){
+				  var opReset = layer.open({
+						content : "确定删除？",
+						icon : 3,
+						closeBtn: false,
+						btn : [ '确定','取消'],
+						yes : function(index){
+							http.post('admin/product/delete', {
+							 	productId: data.id
+							}, function (d) {
+							 	if (d.code == 200) {
+							 		layer.msg('删除成功');
+							 		table.reload('selectTable',{page:{curr:1}});
+							 	} else {
+							 		layer.msg('删除失败');
+							 	}
+							});				    		           
+						}
+					});
+				}else if(obj.event=='imgclick'){
+					var img = data.smallPic.split(",");
+					//页面层
+					layer.open({
+						type: 1,
+						area: ['700px', '500px'], //宽高
+						shadeClose: true, //开启遮罩关闭
+						end: function (index, layero) {
+							return false;
+						},
+						content: '<div style="text-align:center"><img src="' + img[0] + '" style="height:450px"/></div>'
+					});
+				}
+			});
+			
+			//头工具栏事件(批量开启、禁用)
+			table.on('toolbar(layTable)', function (obj) {
+				if(obj.event=='delete'){
+					var checkStatus = table.checkStatus(obj.config.id); //获取选中行状态
+					var data = checkStatus.data; //获取选中行数据
+					if (data.length == 0) {
+						layer.msg('请选择要删除的商品');
+						return;
+					}
+					let productIdList = [];
+					for (var i = 0; i < data.length; i++) {
+						productIdList.push(data[i].id)
+					}
+					var datas = {
+						productIdList:productIdList,
+					}
+					http.postJSON('admin/product/delete/batch', JSON.stringify(productIdList),function (res) {
+						if(res.code=='200'){
+							layer.msg('操作成功！');
+							table.reload('selectTable');
+						}else{
+							layer.msg(res.msg);
+						}
+					})
+				}else{
+					var state;
+					if(obj.event=='normal'){
+						state = 1;
+					}else if(obj.event=='prohibit'){
+						state = 0;
+					}
+					var checkStatus = table.checkStatus(obj.config.id); //获取选中行状态
+					var data = checkStatus.data; //获取选中行数据
+					if (data.length == 0) {
+						layer.msg(state==1?'请选择要上架的商品':'请选择要下架的商品');
+						return;
+					}
+					let idList = [];
+					for (var i = 0; i < data.length; i++) {
+						idList.push(data[i].id)
+					}
+					var datas = {
+						idList:idList,
+						state:state
+					}
+					http.postJSON('admin/product/shelfStatus/update/batch', JSON.stringify(datas),function (res) {
+						if(res.code=='200'){
+							layer.msg('操作成功！');
+							table.reload('selectTable');
+						}else{
+							layer.msg(res.msg);
+						}
+					})
+				}
+				
+			});
+			
+    })
+</script>
+</body>
+
+</html>

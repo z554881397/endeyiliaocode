@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>团队详情</title>
+    <link rel="stylesheet" href="../plugins/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<style>
+	.proporStyle{
+		width:60%;
+		margin-left: 20px;
+	}
+	.spanTitle{
+		padding:10px;
+	}
+</style>
+<body>
+<div class="main">
+	<div>
+	    <blockquote class="layui-elem-quote">
+	        <span>团队详情列表</span>
+	        <button class="layui-btn layui-btn-sm btnright btn-blockquote" onclick="window.history.back()">返回</button>
+	    </blockquote>
+	</div>
+    <div class="layui-card">
+        <div class="layui-card-header layuiadmin-card-header-auto">
+			<form class="layui-form" action="">
+				<div class="layui-form-item layui-inline">
+				  <label class="layui-form-label">搜索条件：</label>
+				  <div class="layui-input-inline">
+					 <input type="text" class="layui-input" name="searchKey" placeholder="手机号" />
+				  </div>
+				</div>
+				<div class="layui-form-item layui-inline">
+				    <label class="layui-form-label">季度：</label>
+					<div class="layui-input-inline">
+						<select lay-filter="quarterye" id="quarterye">
+						</select>
+					</div>
+					<div class="layui-input-inline">
+					  <select lay-filter="quarterjd" id="quarterjd">
+					    <option value=""></option>
+					  </select>
+					</div>
+				</div>
+				<div class="layui-form-item layui-inline select-but">
+					<button class="layui-btn" lay-submit lay-filter="searchBth" type="button">查询</button>
+					<!-- <button class="layui-btn addAccount printBut"  type="button" id="export">导出</button> -->
+				</div>
+			</form>
+		</div>
+		<div class="spanTitle">新晋合伙人：
+			<div class="layui-form-item layui-inline select-but">
+					<button class="layui-btn addAccount printBut"  type="button" id="myPrint">导出</button>
+			</div>
+		</div>
+		<div class="layui-form proporStyle">
+		  <div class="main_list" id="NewprintView">
+		  	<table class="layui-hide" id="newList" lay-filter="layTable"></table>
+		  </div>
+		</div>
+		<div class="spanTitle">团队积分详情：
+			<div class="layui-form-item layui-inline select-but">
+					<button class="layui-btn addAccount printBut"  type="button" id="teamPrint">导出</button>
+			</div>
+		</div>
+		<div class="main_list" id="printView">
+			<table class="layui-hide" id="selectList" lay-filter="layTable"></table>
+		</div>
+	</div>
+</div>
+<script type="text/html" id="state">
+    <!-- 状态 -->
+    <input type="checkbox" name="sex" value="{{d.productId}}" lay-skin="switch" lay-text="上架|下架" lay-filter="sexDemo" {{ d.publishStatus==
+           1 ? 'checked' : '' }}>
+</script>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../plugins/layui/layui.js"></script>
+<script type="text/javascript" src="../js/auth.js"></script>
+<script type="text/javascript" src="../js/excel.js"></script>
+<script>
+	
+	// 按钮权限
+	if(getAuth('积分管理','积分池','导出')){ $('.printBut').show() }else{ $('.selectBut').hide() }
+	
+	var excelList = [], excelList2 = [];
+
+	layui.config({
+	    base: '../plugins/layui/modules/'
+	});
+	
+	layui.use(['layer', 'form', 'http', 'common','laydate','table'], function () {
+	    var layer = layui.layer,
+	        http = layui.http,
+	        form = layui.form,
+	        common = layui.common,
+			laydate = layui.laydate,
+			table = layui.table,
+			$ = layui.jquery,
+			excel = layui.excel;
+			
+			//日期范围
+		    laydate.render({
+				elem: '#test6'
+				,range: true
+		    });
+			
+			var id = http.getParam('id');
+			
+			var param = {parentUserId:id};
+			
+			//列表查询
+			var newTable;
+			newTable = http.table2({
+				elem: '#newList',
+				url: 'admin/user/score/listNewPartnerUser',
+				type: 'get',
+				id: 'newTable',
+				where:param,
+				done: function(res, curr, count){
+				    excelList = res.data;
+				  },
+				cols: [[
+				  {field:'account', title: '合伙人', align : 'center'}
+				  ,{field:'promotionTime', title: '我是晋升时间', align : 'center'}
+				]]
+			});
+
+			//列表查询
+			var selectTable;
+			selectTable = http.table({
+				elem: '#selectList',
+				url: 'admin/user/score/listTeamScoreInfo',
+				type: 'get',
+				id: 'selectTable',
+				where:param,
+				done: function(res, curr, count){
+				    excelList2 = res.data;
+				  },
+				cols: [[
+				  {field:'partnerAccount', title: '合伙人', align : 'center',width: 150}
+				  ,{field:'sales', title: '销售额', align : 'center'}
+				  ,{field:'ratio', title: '可获得积分比例', align : 'center',width: 150,
+						  templet: function (d) {
+								return toPercent(d.ratio);
+						  }
+				  }
+				  ,{field:'currentScore', title: '当前季度积分', align : 'center',width: 150,
+						templet: function (d) {
+							return getFormatPrice(d.currentScore);
+						}
+				  }
+				  ,{field:'partnerName', title: '真实姓名', align : 'center'}
+				  ,{field:'partnerBankCard', title: '银行账号', align : 'center',width: 180}
+				  ,{field:'totalScore', title: '历史总积分', align : 'center',
+						templet: function (d) {
+							return getFormatPrice(d.totalScore);
+						}
+				  }
+				  ,{field:'', title: '操作', align : 'center',fixed: 'right',width: 180,
+						templet: function (d) {
+							var html =
+								'<a class="buttoncolorOne" lay-event="InfoH" >查看历史收益记录</a>'
+							return html;
+						}
+				  }
+				]],
+				page: true
+			});
+			
+			//近三年
+			var pre = new Date();
+			$("#quarterye").html(
+				'<option value=""></option>'+
+				'<option value="'+pre.getFullYear()+'">'+pre.getFullYear()+'</option>'+
+				'<option value="'+(pre.getFullYear()-1)+'">'+(pre.getFullYear()-1)+'</option>'+
+				'<option value="'+(pre.getFullYear()-2)+'">'+(pre.getFullYear()-2)+'</option>'
+			)
+			form.render();
+			
+			//监听季度年份
+			form.on('select(quarterye)', function(data){
+				if(data.value){
+					$("#quarterjd").html(
+							'<option value="4">第四季度</option>'+
+							'<option value="3">第三季度</option>'+
+							'<option value="2">第二季度</option>'+
+							'<option value="1">第一季度</option>'
+							);
+				}else{
+					$("#quarterjd").html(
+							'<option value=""></option>'
+					);
+				}
+				form.render();
+			}); 
+			
+			//查询
+			form.on('submit(searchBth)', function (data) {
+				var searchKey = $('input[name=searchKey]').val();
+				param.searchKey = searchKey;
+				if($("#quarterye").val()){
+					param.quarter = $("#quarterye").val()+'-'+$("#quarterjd").val();
+				}else{
+					param.quarter ='';
+				}
+							
+				newTable.reload({
+					where: param
+				})
+				selectTable.reload({
+					page:{curr:1},
+					where: param
+				})
+			})
+			
+			
+			table.on('tool(layTable)', function(obj){
+				var data = obj.data;
+				if(obj.event=='InfoH'){
+					//查看历史收益记录
+					window.location.href="integral_history.html?id="+data.partnerUserId;
+				}
+			});
+			
+			//新晋合伙人导出Excel
+			$('#myPrint').click(function(){
+				if(!excelList || excelList.length==0){
+					layer.msg('没有数据')
+					return
+				}
+				var data = excelList;
+				var excelData = [];
+				for(var i = 0;i<data.length;i++){
+					var list = {
+						account:data[i].account,
+						promotionTime:data[i].promotionTime
+					}
+					excelData.push(list)
+				}
+				
+				excelData.unshift({account: '合伙人',promotionTime:'我是晋升时间'});
+				excel.exportExcel({
+				    sheet1: excelData
+				}, '新晋合伙人.xlsx', 'xlsx');
+			})
+			
+			//团队积分详情导出Excel
+			$('#teamPrint').click(function(){
+				if(!excelList2 || excelList2.length==0){
+					layer.msg('没有数据')
+					return
+				}
+				var data = excelList2;
+				var excelData = [];
+				for(var i = 0;i<data.length;i++){
+					var list = {
+						partnerAccount:data[i].partnerAccount,
+						sales:data[i].sales,
+						ratio:toPercent(data[i].ratio),
+						currentScore:data[i].currentScore,
+						partnerName:data[i].partnerName,
+						partnerBankCard:data[i].partnerBankCard,
+						totalScore:data[i].totalScore
+					}
+					excelData.push(list)
+				}
+				
+				excelData.unshift({partnerAccount: '合伙人',sales:'销售额',ratio:'可获得积分比例',currentScore:'当前季度积分',
+									partnerName:'真实姓名',partnerBankCard:'银行账号',totalScore:'历史总积分'});
+				excel.exportExcel({
+				    sheet1: excelData
+				}, '团队积分详情.xlsx', 'xlsx');
+			})
+    })
+	
+	//小数转化为分数
+	function toPercent(point){
+		if(point){
+			var percent = Number(point*100).toFixed(2);
+			percent+="%";
+			return percent;
+		}else{
+			return ''
+		}
+	}
+</script>
+</body>
+
+</html>

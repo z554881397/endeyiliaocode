@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>后台系统管理</title>
+	<meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="../plugins/layui/css/layui.css">
+    <link rel="stylesheet" href="../css/main.css">
+	<link rel="stylesheet" href="../css/font-awesome.min.css">
+</head>
+<body>
+<div class="main">
+    <blockquote class="layui-elem-quote">账号列表</blockquote>
+    <div class="layui-card">
+        <div class="layui-card-header layuiadmin-card-header-auto">
+			<form class="layui-form" action="">
+				<div class="layui-form-item layui-inline">
+				  <label class="layui-form-label">账号：</label>
+				  <div class="layui-input-inline">
+					 <input type="text" class="layui-input" name="account" placeholder="请输入账号" />
+				  </div>
+				</div>
+				<div class="layui-form-item layui-inline">
+				    <label class="layui-form-label">所属角色：</label>
+				    <div class="layui-input-block">
+				      <select name="roleId" lay-filter="roleId">
+				        <option value=""></option>
+				      </select>
+				    </div>
+				</div>
+				<div class="layui-form-item layui-inline">
+				    <label class="layui-form-label">创建时间：</label>
+				    <div class="layui-input-inline">
+						<input type="text" class="layui-input" id="selectTime" placeholder=" ~ ">
+				    </div>
+				</div>
+				<div class="layui-form-item layui-inline">
+				    <label class="layui-form-label">用户状态：</label>
+				    <div class="layui-input-block">
+				      <select name="openStatus" lay-filter="aihao">
+				        <option value=""></option>
+				        <option value="0">禁用</option>
+						<option value="1">启用</option>
+				      </select>
+				    </div>
+				</div>
+				<div class="layui-form-item layui-inline select-but">
+					<button class="layui-btn selectBut" lay-submit lay-filter="searchBth" type="button">查询</button>
+					<button class="layui-btn addAccount"  type="button">添加</button>
+				</div>
+			</form>
+		</div>
+		<div class="main_list">
+			<table class="layui-hide" id="selectList" lay-filter="layTable"></table>
+		</div>
+	</div>
+</div>
+<script type="text/html" id="state">
+    <!-- 状态 -->
+	<input type="checkbox" name="sex" value="{{d.id}}" lay-skin="switch" lay-filter="statusDemo" {{ d.openStatus==
+	       1 ? 'checked' : '' }} {{stateAuth?'':'disabled="disabled"'}}>
+</script>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../plugins/layui/layui.js"></script>
+<script type="text/javascript" src="../js/auth.js"></script>
+<script>
+	
+	// 按钮权限
+	if(getAuth('后台用户管理','账号管理','查询')){ $('.selectBut').show() }else{ $('.selectBut').hide() }
+	if(getAuth('后台用户管理','账号管理','添加')){ $('.addAccount').show() }else{ $('.addAccount').hide() }
+	
+	var updateAuth = getAuth('后台用户管理','账号管理','修改'),
+	    deteleAuth = getAuth('后台用户管理','账号管理','删除'),
+		resetAuth = getAuth('后台用户管理','账号管理','重置密码'),
+		stateAuth = getAuth('后台用户管理','账号管理','切换状态');
+		
+	
+	
+	layui.config({
+	    base: '../plugins/layui/modules/'
+	});
+	
+	layui.use(['layer', 'form', 'http', 'common','laydate','table'], function () {
+	    var layer = layui.layer,
+	        http = layui.http,
+	        form = layui.form,
+	        common = layui.common,
+			laydate = layui.laydate,
+			table = layui.table;
+			
+			//创建时间
+		    laydate.render({
+				elem: '#selectTime'
+				,range: "~"
+		    });
+			
+			//所属角色
+			http.get('admin/role/listAll',{},function(res){
+				var html = '<option value=""></option>';
+				var data = res.data;
+				for (var i = 0; i < data.length; i++) {
+					html += '<option value="' + data[i].id + '">' + data[i].roleName + '</option>'
+				}
+				$('select[name=roleId]').html(html);
+				form.render('select');
+			})
+			
+			//列表查询
+			var selectTable;
+			selectTable = http.table({
+				elem: '#selectList',
+				url: 'admin/admin/listPage',
+				type: 'get',
+				id: 'selectTable',
+				cols: [[
+				   { title : '序号', align : 'center', width : 80, templet : function(d) { return d.LAY_INDEX } }
+				  ,{field:'name', title: '用户名称', align : 'center'}
+				  ,{field:'account', title: '账号', align : 'center'}
+				  ,{field:'roleName', title: '角色', align : 'center'}
+				  ,{field:'city', title: '状态', align : 'center', templet: "#state"}
+				  ,{field:'createTime', title: '创建时间', align : 'center',width: 180}
+				  ,{field:'', title: '操作', align : 'center',fixed: 'right',width: 180,
+						templet: function (d) {
+							var html = '';
+								if(updateAuth)
+									html+='<a class="buttoncolor" lay-event="edit" >修改</a>'
+								if(deteleAuth)
+									html+='<a class="buttoncolor" lay-event="delete" >删除</a>'
+								if(resetAuth)
+									html+='<a class="buttoncolorOne" lay-event="reset" >重置密码</a>'
+							return html;
+						}
+				  }
+				]],
+				page: true
+			});
+			
+			//查询
+			form.on('submit(searchBth)', function (data) {
+				let _data = data.field,
+					param = _data;
+				var startTime = $('#selectTime').val()?$('#selectTime').val().split(' ~ ')[0]:'';
+				var endTime = $('#selectTime').val()?$('#selectTime').val().split(' ~ ')[1]:'';
+				param.startTime = startTime;
+				param.endTime = endTime;
+				selectTable.reload({
+					page:{curr:1},
+					where: param
+				})
+			})
+			
+			//添加
+			$('.addAccount').on('click', function () {
+				window.location.href = 'account_add.html';
+			});
+			
+			//状态 0关闭 1开启
+			form.on('switch(statusDemo)', function (obj) {
+				var state = obj.elem.checked ? 1 : 0;
+				var data = {
+					id: obj.value,
+					state:state
+				}
+				http.post('admin/admin/state/update', data,function (res) {
+					if(res.code=='200'){
+						layer.msg('操作成功！');
+					}else{
+						layer.msg(res.msg);
+					}
+			   })
+			});
+			
+			
+			table.on('tool(layTable)', function(obj){
+				var data = obj.data;
+				if(obj.event=='edit'){
+					//修改
+					window.location.href="account_edit.html?id="+data.id;
+				}else if(obj.event=='delete'){
+					//详情
+					var opDalete = layer.open({
+						content : "确定删除？",
+						icon : 3,
+						closeBtn: false,
+						btn : [ '确定','取消'],
+						yes : function(index){	
+							http.post('/admin/admin/delete', {
+								id: data.id
+							}, function (d) {
+								if (d.code == 200) {
+									layer.msg('删除成功');
+									table.reload('selectTable',{page:{curr:1}});
+								} else {
+									layer.msg(d.msg);
+								}
+							});
+						}
+					});
+				}else if(obj.event=='reset'){
+				  var opReset = layer.open({
+						content : "确定重置？",
+						icon : 3,
+						closeBtn: false,
+						btn : [ '确定','取消'],
+						yes : function(index){
+							http.post('/admin/admin/resetPassword', {
+								id: data.id
+							}, function (d) {
+								if (d.code == 200) {
+									layer.msg('重置成功');
+									table.reload('selectTable');
+								} else {
+									layer.msg(d.msg);
+								}
+							}); 			    		           
+						}
+					});
+				}
+			});			
+			
+    })
+</script>
+</body>
+
+</html>

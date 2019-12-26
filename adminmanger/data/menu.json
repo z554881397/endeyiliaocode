@@ -1,0 +1,144 @@
+[
+  {
+    "href": "",
+    "icon": "",
+    "spread": false,
+    "title": "后台用户管理",
+	"children": [
+	  {
+	    "children": [],
+	    "href": "../page/account_list.html",
+	    "icon": "",
+	    "spread": false,
+	    "title": "账号管理"
+	  },
+	  {
+	    "children": [],
+	    "href": "../page/role_list.html",
+	    "icon": "",
+	    "spread": false,
+	    "title": "角色管理"
+	  }
+	]
+  },
+  {
+    "href": "",
+    "icon": "",
+    "spread": false,
+    "title": "用户管理",
+	"children": [
+	  {
+	    "children": [],
+	    "href": "../page/user_list.html",
+	    "icon": "",
+	    "spread": false,
+	    "title": "用户管理"
+	  },
+	  {
+	    "children": [],
+	    "href": "../page/partner_apply.html",
+	    "icon": "",
+	    "spread": false,
+	    "title": "合伙人申请"
+	  }
+	]
+  },
+  {
+    "href": "../page/commodity_list.html",
+    "icon": "",
+    "spread": false,
+    "title": "商品管理"
+  },
+  {
+    "href": "",
+    "icon": "",
+    "spread": false,
+    "title": "分享管理",
+    "children": [
+      {
+        "children": [],
+        "href": "../page/sharing_records.html",
+        "icon": "",
+        "spread": false,
+        "title": "分享记录"
+      },
+      {
+        "children": [],
+        "href": "../page/sharing_proportion.html",
+        "icon": "",
+        "spread": false,
+        "title": "分享奖比例设置"
+      }
+    ]
+  },
+  {
+    "href": "../page/order_list.html",
+    "icon": "",
+    "spread": false,
+    "title": "订单管理"
+  },
+  {
+    "href": "",
+    "icon": "",
+    "spread": false,
+    "title": "积分管理",
+    "children": [
+      {
+        "children": [],
+        "href": "../page/integral_indirectp.html",
+        "icon": "",
+        "spread": false,
+        "title": "间接奖"
+      },
+      {
+        "children": [],
+        "href": "../page/integral_repeatp.html",
+        "icon": "",
+        "spread": false,
+        "title": "复购奖"
+      },
+	  {
+	    "children": [],
+	    "href": "../page/integral_pool.html",
+	    "icon": "",
+	    "spread": false,
+	    "title": "积分池"
+	  },
+	  {
+	    "children": [],
+	    "href": "../page/integral_install.html",
+	    "icon": "",
+	    "spread": false,
+	    "title": "积分比例设置"
+	  }
+    ]
+  },
+  {
+    "href": "",
+    "icon": "",
+    "spread": false,
+    "title": "统计信息",
+    "children": [
+      {
+        "children": [],
+        "href": "../page/statistics_profit.html",
+        "icon": "",
+        "spread": false,
+        "title": "盈利"
+      },
+      {
+        "children": [],
+        "href": "../page/statistics_sale.html",
+        "icon": "",
+        "spread": false,
+        "title": "销售"
+      }
+    ]
+  },
+  {
+    "href": "../page/postal_cash.html",
+    "icon": "",
+    "spread": false,
+    "title": "提现记录"
+  }
+]

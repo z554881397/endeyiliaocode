@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>后台管理系统</title>
+    <link rel="stylesheet" href="../plugins/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+
+<body>
+<div class="main">
+    <blockquote class="layui-elem-quote">修改角色</blockquote>
+    <div class="inMyForm">
+		<form class="layui-form" action="">
+			<div class="layui-form-item">
+			  <label class="layui-form-label">角色名称：</label>
+			  <div class="layui-input-block">
+				 <input type="text" class="layui-input" name="roleName" placeholder="请输入角色名称" />
+			  </div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">状态</label>
+				<div class="layui-input-block">
+				  <input type="radio" name="openStatus" value="1" title="启用" checked="">
+				  <input type="radio" name="openStatus" value="2" title="禁用">
+				</div>
+			</div>
+			<div class="layui-form-item">
+				<label class="layui-form-label">角色权限：</label>
+				<div class="layui-input-block">
+					<div id="selectRole" class="demo-tree"></div>
+				</div>
+			</div>
+			<div class="layui-form-item rigth">
+			    <button type="button" class="layui-btn layui-btn-normal sure" >确认</button>
+				<button type="button" class="layui-btn layui-btn-primary" onclick="window.history.back()">取消</button>
+			</div>
+		</form>
+		<div class="main_list">
+			<table class="layui-hide" id="noticeList" lay-filter="layTable"></table>
+		</div>
+	</div>
+</div>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../plugins/layui/layui.js"></script>
+<script>
+	layui.config({
+	    base: '../plugins/layui/modules/'
+	});
+	
+	layui.use(['layer', 'form', 'http', 'common','laydate','table','tree','util'], function () {
+	    var layer = layui.layer,
+	        http = layui.http,
+	        form = layui.form,
+	        common = layui.common,
+			tree = layui.tree,
+			util = layui.util;
+			
+			var id = http.getParam('id');
+			
+			//所有菜单权限
+			http.get('admin/auth/listAll',{},function(res){
+				//开启菜单权限
+				tree.render({
+				  elem: '#selectRole'
+				  ,data: res.data
+				  ,id: 'demoId'  //定义索引
+				  ,showCheckbox: true
+				}); 
+				getInfo();
+			})
+			
+			//查询回显
+			var infoRoleList = [];  //回显已选权限
+			function getInfo(){
+				http.get('admin/role/findById',{id:id},function(res){
+					 var data = res.data;
+					 $('input[name=roleName]').val(data.roleName);
+					if(data.openStatus == 0)
+						$('input[name=openStatus]').eq(1).attr('checked',true)
+					if(data.openStatus == 1)
+						$('input[name=openStatus]').eq(0).attr('checked',true)
+					if(data.authVoList){
+						get_infolist(data.authVoList);	
+						tree.setChecked('demoId', infoRoleList);
+					}
+					form.render();
+				})
+			}
+			
+			
+			// 确定
+			var authIdList = [];  //已选权限
+			$(".sure").click(function () {
+				authIdList = [];
+				var roleName = $('input[name=roleName]').val();
+				if ($.trim(roleName) == "") {
+					layer.msg('角色名不能为空')
+					$("input[name='roleName']").focus();
+					return false;
+				}
+				var openStatus = $('input[name=openStatus]:checked').val();
+				var checkData = tree.getChecked('demoId');//获得选中的权限
+				get_list(checkData);
+				var data = {
+					id:id,
+					roleName: roleName,
+					openStatus: openStatus,
+					authIdList:authIdList
+				}
+				http.postJSON('admin/role/update', JSON.stringify(data),function(res){
+					if(res.code == 200){
+						layer.msg('保存成功', {icon:1 , time: 2000}, function(){
+							location.href='role_list.html';
+						});
+					}else{
+						layer.msg(res.msg)
+					}
+				})
+			})
+			
+			//获取权限id
+			function get_list(checkData){
+				for(var i=0;i<checkData.length;i++){
+					authIdList.push(checkData[i].id);
+					if(checkData[i].children.length>0){
+						get_list(checkData[i].children);
+					}
+				}
+			}
+			
+			//回显权限id
+			function get_infolist(checkData){
+				for(var i=0;i<checkData.length;i++){
+					if(nameTitle(checkData[i].name)){
+						infoRoleList.push(checkData[i].id);
+					}
+					if(checkData[i].children.length>0){
+						get_infolist(checkData[i].children);
+					}
+				}
+			}
+			
+			//验证父级名 只有最小子级能入tree回显
+			function nameTitle(name){
+				var state = true;
+				if(
+					name == '后台用户管理' ||
+					name == '账号管理' ||
+					name == '角色管理' ||
+					name == '用户管理' ||
+					name == '合伙人申请' ||
+					name == '商品管理' ||
+					name == '分享管理' ||
+					name == '分享记录' ||
+					name == '分享奖比例设置' ||
+					name == '订单管理' ||
+					name == '积分管理' ||
+					name == '间接奖' ||
+					name == '复购奖' ||
+					name == '积分池' ||
+					name == '积分比例设置' ||
+					name == '统计信息' ||
+					name == '提现记录'
+				){
+					state = false
+				}
+				return state
+			}
+		
+			
+    })
+</script>
+</body>
+
+</html>

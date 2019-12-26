@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>角色管理</title>
+    <link rel="stylesheet" href="../plugins/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+
+<body>
+<div class="main">
+    <blockquote class="layui-elem-quote">角色列表</blockquote>
+    <div class="layui-card">
+        <div class="layui-card-header layuiadmin-card-header-auto">
+			<form class="layui-form" action="">
+				<div class="layui-form-item layui-inline">
+				    <label class="layui-form-label">状态：</label>
+				    <div class="layui-input-block">
+				      <select name="openStatus" lay-filter="aihao">
+				        <option value=""></option>
+				        <option value="1">启用</option>
+						<option value="0">禁用</option>
+				      </select>
+				    </div>
+				</div>
+				<div class="layui-form-item layui-inline">
+				    <label class="layui-form-label">创建时间：</label>
+				    <div class="layui-input-block">
+				      <select name="limitDays" lay-filter="aihao">
+				        <option value=""></option>
+				        <option value="3">近三天</option>
+						<option value="7">近一周</option>
+						<option value="30">近一个月内</option>
+				      </select>
+				    </div>
+				</div>
+				
+				<div class="layui-form-item layui-inline select-but">
+					<button class="layui-btn selectBut" lay-submit lay-filter="searchBth" type="button">搜索</button>
+					<button class="layui-btn addAccount"  type="button">添加</button>
+				</div>
+			</form>
+		</div>
+		<div class="main_list">
+			<table class="layui-hide" id="selectList" lay-filter="layTable"></table>
+		</div>
+	</div>
+</div>
+<script type="text/html" id="state">
+    <!-- 状态 -->
+    <input type="checkbox" name="sex" value="{{d.id}}" lay-skin="switch" lay-filter="statusDemo" {{ d.openStatus==
+           1 ? 'checked' : '' }} {{stateAuth?'':'disabled="disabled"'}}>
+</script>
+<script type="text/html" id="toolbarDemo">
+	<div class="layui-btn-container toolbarDemo" {{stateAuth?"":"style='display:none'"}}>
+		<button class="layui-btn layui-btn-sm" lay-event="normal">正常</button>
+		<button class="layui-btn layui-btn-sm" lay-event="prohibit">禁用</button>
+	</div>
+</script>
+<script src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../plugins/layui/layui.js"></script>
+<script type="text/javascript" src="../js/auth.js"></script>
+<script>
+	
+	// 按钮权限
+	if(getAuth('后台用户管理','角色管理','查询')){ $('.selectBut').show() }else{ $('.selectBut').hide() }
+	if(getAuth('后台用户管理','角色管理','添加')){ $('.addAccount').show() }else{ $('.addAccount').hide() }
+	
+	var updateAuth = getAuth('后台用户管理','角色管理','修改'),
+	    deteleAuth = getAuth('后台用户管理','角色管理','删除'),
+		stateAuth = getAuth('后台用户管理','角色管理','切换状态');
+	
+	layui.config({
+	    base: '../plugins/layui/modules/'
+	});
+	
+	layui.use(['layer', 'form', 'http', 'common','laydate','table'], function () {
+	    var layer = layui.layer,
+	        http = layui.http,
+	        form = layui.form,
+	        common = layui.common,
+			laydate = layui.laydate,
+			table = layui.table;
+			
+			//列表查询
+			var selectTable;
+			selectTable = http.table({
+				elem: '#selectList',
+				url: 'admin/role/listPage',
+				type: 'get',
+				id: 'selectTable',
+				toolbar: '#toolbarDemo',
+				cols: [[
+				   {type:'checkbox'}
+				  ,{field:'roleName', title: '角色名称', align : 'center'}
+				  ,{field:'updateTime', title: '添加时间', align : 'center'}
+				  ,{field:'city', title: '状态', align : 'center', templet: "#state"}
+				  ,{field:'', title: '操作', align : 'center',fixed: 'right',width: 240,
+						templet: function (d) {
+							var html = '';
+							if(updateAuth)
+								html+='<a class="buttoncolor" lay-event="edit" >修改</a>' 
+							if(deteleAuth)
+								html+='<a class="buttoncolorOne" lay-event="delete" >删除</a>'
+							return html;
+						}
+				  }
+				]],
+				page: true,
+				height: 523,
+				
+			});
+			
+			//查询
+			form.on('submit(searchBth)', function (data) {
+				let _data = data.field,
+					param = _data;
+				selectTable.reload({
+					page:{curr:1},
+					where: param
+				})
+			})
+			
+			//添加
+			$('.addAccount').on('click', function () {
+				window.location.href = 'role_add.html';
+			});
+			
+			//状态 0关闭 1开启
+			form.on('switch(statusDemo)', function (obj) {
+				var state = obj.elem.checked ? 1 : 0;
+				var data = {
+					id: obj.value,
+					state:state
+				}
+				http.post('admin/role/state/update', data,function (res) {
+					if(res.code=='200'){
+						layer.msg('操作成功！');
+					}else{
+						layer.msg(res.msg);
+					}
+			   })
+			});
+			
+			//操作			
+			table.on('tool(layTable)', function(obj){
+				var data = obj.data;
+				if(obj.event=='edit'){
+					//修改
+					window.location.href="role_edit.html?id="+data.id;
+				}else if(obj.event=='delete'){
+					//删除
+					var opDalete = layer.open({
+						content : "确定删除？",
+						icon : 3,
+						closeBtn: false,
+						btn : [ '确定','取消'],
+						yes : function(index){
+							http.post('admin/role/delete', {
+								id: data.id
+							}, function (d) {
+								if (d.code == 200) {
+									layer.msg('删除成功');
+									table.reload('selectTable',{page:{curr:1}});
+								} else {
+									layer.msg('删除失败');
+								}
+							});								   
+						}
+					});
+				}
+			});
+			
+			//头工具栏事件(批量开启、禁用)
+			table.on('toolbar(layTable)', function (obj) {
+				var state;
+				if(obj.event=='normal'){
+					state = 1;
+				}else if(obj.event=='prohibit'){
+					state = 0;
+				}
+				var checkStatus = table.checkStatus(obj.config.id); //获取选中行状态
+				var data = checkStatus.data; //获取选中行数据
+				if (data.length == 0) {
+					layer.msg(state==1?'请选择要开启的角色':'请选择要禁用的角色');
+					return;
+				}
+				let idList = [];
+				for (var i = 0; i < data.length; i++) {
+					idList.push(data[i].id)
+				}
+				var datas = {
+					idList:idList,
+					state:state
+				}
+				http.postJSON('admin/role/state/update/batch', JSON.stringify(datas),function (res) {
+					if(res.code=='200'){
+						layer.msg('操作成功！');
+						table.reload('selectTable');
+					}else{
+						layer.msg(res.msg);
+					}
+			    })
+			});
+    })
+</script>
+</body>
+
+</html>

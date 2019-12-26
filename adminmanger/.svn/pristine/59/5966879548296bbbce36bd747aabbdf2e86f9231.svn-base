@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>分享管理</title>
+    <link rel="stylesheet" href="../plugins/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<style>
+	.proporStyle{
+		height:500px;
+		margin:auto;
+		width:60%;
+		padding-top:100px;
+	}
+	.layui-table td, .layui-table th{
+		text-align: center;
+	}
+</style>
+<body>
+<div class="main">
+    <blockquote class="layui-elem-quote">分享奖比例设置</blockquote>
+    <div class="layui-card">
+		<div class="proporStyle">
+			<div class="layui-form">
+			  <table class="layui-table">
+			    <colgroup>
+			      <col width="150">
+			      <col width="150">
+			      <col>
+			    </colgroup>
+			    <thead>
+			      <tr>
+			        <th>奖项</th>
+			        <th>获得奖励百分比</th>
+			      </tr> 
+			    </thead>
+			    <tbody>
+			      <tr>
+			        <td>分享奖</td>
+			        <td><input type="text" class="layui-input" name="configValue" placeholder="分享奖" /></td>
+			      </tr>
+			    </tbody>
+			  </table>
+			</div>
+			<div class="overbut" style="margin-top:150px">
+				<button class="layui-btn sure"  type="button">提交</button>
+				<button class="layui-btn backbut"  type="button">重置</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../plugins/layui/layui.js"></script>
+<script type="text/javascript" src="../js/auth.js"></script>
+<script>
+	
+	// 按钮权限
+	if(getAuth('分享管理','分享奖比例设置','提交')){ $('.sure').show() }else{ $('.sure').hide() }
+	if(getAuth('分享管理','分享奖比例设置','重置')){ $('.backbut').show() }else{ $('.backbut').hide() }
+	
+	layui.config({
+	    base: '../plugins/layui/modules/'
+	});
+	
+	layui.use(['layer', 'form', 'http', 'common','laydate','table'], function () {
+	    var layer = layui.layer,
+	        http = layui.http,
+	        form = layui.form,
+	        common = layui.common,
+			laydate = layui.laydate,
+			table = layui.table;
+			
+			//查询回显
+			selectInfo()
+			function selectInfo(){
+				http.get('admin/share/manage/shareAward/config',{},function(res){
+					 $('input[name=configValue]').val(toPercent(res.data.configValue));
+				})
+			}
+
+			//提交
+			$(".sure").click(function () {
+				var openShow = layer.open({
+					content : "确认修改以上数据吗？",
+					icon : 3,
+					closeBtn: false,
+					btn : [ '确定','取消'],
+					yes : function(index){	
+						var awardRatio =  $('input[name=configValue]').val();
+						if ($.trim(awardRatio) == "") {
+							layer.msg('获得奖励百分比不能为空')
+							return false;
+						}
+						
+						var reg = /^((\d+\.?\d*)|(\d*\.\d+))\%$/; //验证百分比正则
+						
+						var result = reg.test(awardRatio);
+						if (!result) {
+							layer.msg('请输入0-100的百分数')
+							return false;
+						}
+						
+						awardRatio = toPoint(awardRatio);
+						
+						http.post('admin/share/manage/shareAward/config', {awardRatio:awardRatio},function(res){
+							if(res.code == 200){
+								layer.msg('提交成功')
+							}else{
+								layer.msg(res.msg)
+							}
+						})
+					}
+				});
+			});
+			
+			//重置
+			$(".backbut").click(function () {
+				var openShow = layer.open({
+					content : "确认重置数据吗？",
+					icon : 3,
+					closeBtn: false,
+					btn : [ '确定','取消'],
+					yes : function(index){							
+						http.post('admin/share/manage/shareAward/config/reset', {},function(res){
+							if(res.code == 200){
+								layer.msg('重置成功')
+								selectInfo();
+							}else{
+								layer.msg(res.msg)
+							}
+						})
+					}
+				});
+			});
+			
+			//百分数转化为小数
+			function toPoint(percent){
+			 	var str=percent.replace("%","");
+				        str= str/100;
+			 	return str;
+			}
+			//小数转化为分数
+			function toPercent(point){
+				var percent = Number(point*100).toFixed(2);
+				percent+="%";
+				return percent;
+			}
+
+    })
+</script>
+</body>
+
+</html>

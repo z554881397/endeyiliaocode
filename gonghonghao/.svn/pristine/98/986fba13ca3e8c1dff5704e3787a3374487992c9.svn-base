@@ -1,0 +1,165 @@
+<template>
+  <div class="partnerApply">
+    <div>
+      <van-field label="姓名" v-model="partnerName" placeholder="请输入姓名" />
+      <van-field label="电话号码" type="tel" v-model="telephone" placeholder="请输入电话号码" />
+      <van-field label="银行卡号" v-model="partnerBankCard" placeholder="请输入银行卡号" />
+      <div class="partner-apply-img">
+        <div class="partner-apply-title">身份证正面</div>
+        <van-uploader :after-read="afterRead" v-model="fileList" :before-delete="deleteRead" :max-count="1"/>
+      </div>
+      <div class="partner-apply-img">
+        <div class="partner-apply-title">身份证反面</div>
+        <van-uploader :after-read="afterRead1" v-model="fileList1" :before-delete="deleteRead1" :max-count="1"/>
+      </div>
+    </div>
+    <div class="fixed-btn">
+      <div class="btn">
+        <van-button type="info" block @click="onSubmit">提交</van-button>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import api from '../../api/index.js'
+import commonUtil from '@/assets/js/commonUtil.js';
+export default {
+  name: 'partnerApply',
+  data(){
+    return{
+      publicPath: process.env.BASE_URL,
+      partnerName:'',     //用户名
+      telephone:'',       //手机号
+      partnerBankCard:'', //银行卡号
+      ifPositive:'',
+      ifOpposite:'',
+      fileList:[],
+      fileList1:[],
+      shareUserId: ''
+    }
+  },
+  created() {
+    this.shareUserId = commonUtil.parseUrlParams('shareUserId')
+  },
+  methods: {
+    afterRead(file) {
+      // 身份证正面
+      var formData = new FormData();
+      formData.append('file', file.file)
+      var that = this;
+      api.uploadImg(formData).then(res => {
+        if(res.code == 200){
+          that.ifPositive = res.data;
+        }else{
+          that.fileList = [];
+          that.$toast(res.message)
+        }
+      })
+    },
+    //删除图片
+    deleteRead(){
+      this.ifPositive = '';
+      return true;
+    },
+    afterRead1(file) {
+      // 身份证反面
+      var formData = new FormData();
+      formData.append('file', file.file)
+      var that = this;
+      api.uploadImg(formData).then(res => {
+        if(res.code == 200){
+          that.ifOpposite = res.data;
+        }else{
+          that.fileList1 = [];
+          that.$toast(res.message)
+        }
+      })
+    },
+    //删除图片
+    deleteRead1(){
+        this.ifOpposite = '';
+        return true;
+    },
+
+    onSubmit() {
+        var that = this;
+        if (!this.partnerName) {
+          this.$toast("请输入姓名");
+          return;
+        }
+        if (!this.telephone) {
+          this.$toast("请输入手机号");
+          return;
+        }
+        if (!(/^1[34578]\d{9}$/.test(this.telephone))) {
+          this.$toast("手机号格式有误");
+          return;
+        }        
+        if (!this.partnerBankCard) {
+          this.$toast("请输入银行卡号");
+          return;
+        }
+        if(!this.ifPositive){
+          this.$toast("请上传身份证正面照");
+          return;
+        }
+        if(!this.ifOpposite){
+           this.$toast("请上传身份证反面照");
+          return;
+        }
+        var datali = {
+            partnerName:this.partnerName,
+            telephone:this.telephone,
+            partnerBankCard:this.partnerBankCard,
+            idCardImageFront:this.ifPositive,
+            idCardImageBack:this.ifOpposite,
+            shareUserId:this.shareUserId
+        }
+
+        api.applyAdd(datali).then(res => {
+        if(res.code == 200){
+          that.$toast({
+            message: res.msg,
+            duration: 800,
+            onClose: function () {
+              that.$router.push({ path: '/personal'})
+            }
+          });
+        }else{
+          that.$toast(res.msg)
+        }
+      })
+    }
+  }
+}
+</script>
+<style scoped>
+.partnerApply{
+  height: 100%;
+  background: #fff;
+}
+.partner-apply-img{
+  padding: 16px 16px 0 16px;
+}
+.partner-apply-title{
+  margin-bottom: 16px;
+}
+.fixed-btn{
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: #fff;
+}
+.btn{
+  padding: .5rem 2rem;
+}
+.imgStyle{
+  width: 80px;
+  height: 80px;
+}
+.imgStyle img{
+  width: 100%;
+  height: 100%;
+}
+</style>

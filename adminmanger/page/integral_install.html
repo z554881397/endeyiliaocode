@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>积分比例设置</title>
+    <link rel="stylesheet" href="../plugins/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<style>
+	.proporStyle{
+		margin:auto;
+		width:900px;
+	}
+	.layui-table td, .layui-table th{
+		text-align: center;
+	}
+</style>
+<body>
+<div class="main">
+    <blockquote class="layui-elem-quote">积分比例设置</blockquote>
+    <div class="layui-card">
+		<div class="proporStyle">
+			<!-- 奖金池设置 -->
+			<div class="spanTitle">奖金池设置：</div>
+			<div class="layui-form">
+			  <table class="layui-table mytable">
+			    <colgroup>
+			      <col width="150">
+			      <col width="150">
+			      <col>
+			    </colgroup>
+			    <thead>
+			      <tr>
+			        <th>金额区间</th>
+			        <th>积分百分比</th>
+			      </tr> 
+			    </thead>
+			    <tbody class="selectTboby">
+			      <tr>
+			        <td>	
+					  <div class="layui-input-inline"><input type="number" class="layui-input" name="productName" placeholder="" /></div>
+					  <span>-</span>
+					  <div class="layui-input-inline"><input type="number" class="layui-input" name="productName" placeholder="" /></div>
+					</td>
+			        <td><input type="text" class="layui-input" name="productName" placeholder="" /></td>
+			      </tr>
+			    </tbody>
+			  </table>
+			</div>
+			<div class="overbut" style="margin-top:30px;margin-bottom: 10px;">
+				<button class="layui-btn sure" type="button">提交</button>
+				<button class="layui-btn backbut reset1" lay-submit lay-filter="search" type="button">重置</button>
+			</div>
+		</div>
+		<!-- 间接奖及分享奖设置 -->
+		<div class="proporStyle">
+			<div class="spanTitle">间接奖及分享奖设置：</div>
+			<div class="layui-form">
+			  <table class="layui-table">
+			    <colgroup>
+			      <col width="150">
+			      <col width="150">
+			      <col>
+			    </colgroup>
+			    <thead>
+			      <tr>
+			        <th>奖项</th>
+			        <th>获得奖励百分比</th>
+			      </tr> 
+			    </thead>
+			    <tbody>
+			      <tr>
+			        <td>间接奖</td>
+			        <td><input type="text" class="layui-input" name="indirectAwardConfig" placeholder="" /></td>
+			      </tr>
+				  <tr>
+				    <td>复购奖</td>
+				    <td><input type="text" class="layui-input" name="repeatAwardConfig" placeholder="" /></td>
+				  </tr
+			    </tbody>
+			  </table>
+			</div>
+			<div class="overbut" style="margin-top:30px;height:100px">
+				<button class="layui-btn sure2" lay-submit lay-filter="search" type="button">提交</button>
+				<button class="layui-btn backbut reset2" lay-submit lay-filter="search" type="button">重置</button>
+			</div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../plugins/layui/layui.js"></script>
+<script type="text/javascript" src="../js/auth.js"></script>
+<script>
+	
+	// 按钮权限
+	if(getAuth('积分管理','积分比例设置','奖金池设置提交')){ $('.sure').show() }else{ $('.sure').hide() }
+	if(getAuth('积分管理','积分比例设置','奖金池设置重置')){ $('.reset1').show() }else{ $('.reset1').hide() }
+	if(getAuth('积分管理','积分比例设置','间接奖及分享奖设置提交')){ $('.sure2').show() }else{ $('.sure2').hide() }
+	if(getAuth('积分管理','积分比例设置','间接奖及分享奖设置重置')){ $('.reset2').show() }else{ $('.reset2').hide() }
+	
+	
+	layui.config({
+	    base: '../plugins/layui/modules/'
+	});
+	
+	layui.use(['layer', 'form', 'http', 'common','laydate','table'], function () {
+	    var layer = layui.layer,
+	        http = layui.http,
+	        form = layui.form,
+	        common = layui.common,
+			laydate = layui.laydate,
+			table = layui.table;
+			
+			//查询回显
+			selectInfo()
+			function selectInfo(){
+				http.get('admin/user/score/findAwardConfig',{},function(res){
+					 console.log(res);
+					 var html = "";
+					 var awardPoolConfigList = res.data.awardPoolConfigList;
+					 for(var i=0;i<5;i++){
+						 var awardPoolC = awardPoolConfigList[i];
+						 html+= '<tr>'+
+							    '<td>'+
+							    '<div class="layui-input-inline"><input type="number" value="'+(awardPoolC?awardPoolC.startRange:'')+'" class="layui-input" name="startRange" placeholder="区间上限" /></div>'+
+								'<span> - </span>'+			  
+								'<div class="layui-input-inline"><input type="number" value="'+(awardPoolC?awardPoolC.endRange:'')+'" class="layui-input" name="endRange" placeholder="区间下限" /></div>'+			  
+								'</td>'+			  
+								'<td><input type="text" class="layui-input" value="'+toPercent(awardPoolC?awardPoolC.ratio:'')+'" name="ratio" placeholder="积分百分比（%）" /></td>'+				
+								'</tr>'
+						
+					 }
+					 $('.selectTboby').html(html);
+					 
+					 $('input[name=indirectAwardConfig]').val(toPercent(res.data.indirectAwardConfig));
+					 $('input[name=repeatAwardConfig]').val(toPercent(res.data.repeatAwardConfig));
+					 
+				})
+			}
+			
+			//奖金池设置提交
+			$(".sure").click(function () {
+				var openShow = layer.open({
+					content : "确认修改以上数据吗？",
+					icon : 3,
+					closeBtn: false,
+					btn : [ '确定','取消'],
+					yes : function(index){	
+						
+						var set = [];
+						var valTy = 1;
+						for(var x=0;x<$('.mytable tr').length-1;x++){
+							var startRange = $('td input[name=startRange]').eq(x).val();
+							var endRange = $('td input[name=endRange]').eq(x).val();
+							var ratio = $('td input[name=ratio]').eq(x).val();
+							if(startRange || endRange || ratio){
+								var row = {};
+								row.startRange = startRange;
+								row.endRange = endRange;
+								row.ratio = toPoint(ratio);
+								set.push(row);
+							}
+							
+							if(ratio){
+								var reg = /^((\d+\.?\d*)|(\d*\.\d+))\%$/; //验证百分比正则
+								var result = reg.test(ratio);
+								if (!result) {
+									layer.msg('请输入0-100的百分数')
+									return false;
+								}
+							}
+						};
+						console.log(set);
+						
+						http.postJSON('admin/user/score/awardPool/config', JSON.stringify(set),function(res){
+							if(res.code == 200){
+								layer.msg('提交成功')
+							}else{
+								layer.msg(res.msg)
+							}
+						})
+					}
+				});
+			});
+			
+			//重置
+			$(".reset1").click(function () {
+				var openShow = layer.open({
+					content : "确认重置数据吗？",
+					icon : 3,
+					closeBtn: false,
+					btn : [ '确定','取消'],
+					yes : function(index){							
+						http.post('admin/user/score/awardPool/config/reset', {},function(res){
+							if(res.code == 200){
+								layer.msg('重置成功')
+								selectInfo();
+							}else{
+								layer.msg(res.msg)
+							}
+						})
+					}
+				});
+			});
+			
+			//提交
+			$(".sure2").click(function () {
+				var openShow = layer.open({
+					content : "确认修改以上数据吗？",
+					icon : 3,
+					closeBtn: false,
+					btn : [ '确定','取消'],
+					yes : function(index){	
+						var indirectAwardConfig =  $('input[name=indirectAwardConfig]').val();
+						if ($.trim(indirectAwardConfig) == "") {
+							layer.msg('间接奖获得奖励百分比不能为空')
+							return false;
+						}
+						var repeatAwardConfig =  $('input[name=repeatAwardConfig]').val();
+						if ($.trim(repeatAwardConfig) == "") {
+							layer.msg('复购奖获得奖励百分比不能为空')
+							return false;
+						}
+						
+						var reg = /^((\d+\.?\d*)|(\d*\.\d+))\%$/; //验证百分比正则
+						
+						var result = reg.test(indirectAwardConfig);
+						if (!result) {
+							layer.msg('请输入0-100的百分数')
+							return false;
+						}
+						var result = reg.test(repeatAwardConfig);
+						if (!result) {
+							layer.msg('请输入0-100的百分数')
+							return false;
+						}
+						
+						indirectAwardConfig = toPoint(indirectAwardConfig);
+						repeatAwardConfig = toPoint(repeatAwardConfig);
+						
+						http.post('admin/user/score/indirectAndRepeatAward/config', {indirectRatio:indirectAwardConfig,repeatRatio:repeatAwardConfig},function(res){
+							if(res.code == 200){
+								layer.msg('提交成功')
+							}else{
+								layer.msg(res.msg)
+							}
+						})
+					}
+				});
+			});
+			
+			//重置
+			$(".reset2").click(function () {
+				var openShow = layer.open({
+					content : "确认重置数据吗？",
+					icon : 3,
+					closeBtn: false,
+					btn : [ '确定','取消'],
+					yes : function(index){							
+						http.post('admin/user/score/indirectAndRepeatAward/reset', {},function(res){
+							if(res.code == 200){
+								layer.msg('重置成功')
+								selectInfo();
+							}else{
+								layer.msg(res.msg)
+							}
+						})
+					}
+				});
+			});
+
+    })
+	
+	//小数转化为分数
+	function toPercent(point){
+		if(point){
+			var percent = Number(point*100).toFixed(2);
+			percent+="%";
+			return percent;
+		}else{
+			return ''
+		}
+	}
+	
+	//百分数转化为小数
+	function toPoint(percent){
+		if(percent){
+			var str=percent.replace("%","");
+			        str= str/100;
+			return str;
+		}else{
+			return ''
+		}
+	 	
+	}
+</script>
+</body>
+
+</html>

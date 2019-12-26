@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>盈利统计</title>
+    <link rel="stylesheet" href="../plugins/layui/css/layui.css"/>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<style>
+	.myMain{
+		/* width:60%; */
+		/* margin:auto; */
+		margin-left:10%;
+	}
+	.list{
+		color: #fff;
+	}
+	.list>div{
+		text-align: center;
+	}
+	.number{
+		font-size: 25px;
+		font-weight: bold;
+	}
+	.up,.down,.nervous,.all{
+		border-radius: 5px;
+		font-size: 18px;
+	}
+	.up{
+		background: #FFB800;
+	}
+	.layui-col-md3 {
+	    /* width: 40%; */
+		width: 400px;
+	}
+</style>
+<body>
+<div class="main">
+    <blockquote class="layui-elem-quote">盈利统计</blockquote>
+	<div class="myMain">
+		<div class="layui-card-header layuiadmin-card-header-auto">
+			<div class="layui-row layui-col-space10 list">
+				<div class="layui-col-md3">
+					<div class="up">
+						<div>今日销售</div>
+						<div class="number nowadaysSales">￥0.00</div>
+					</div>
+				</div>
+				<div class="layui-col-md3">
+					<div class="up">
+						<div>平台总销售</div>
+						<div class="number totalSales">￥0.00</div>
+					</div>
+				</div>
+			</div>
+			<div id="mainShow" style="width: 52%;height:500px;;margin-top:20px"></div>
+		</div>
+	</div>
+</div>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script type="text/javascript" src="../plugins/layui/layui.js"></script>
+<script type="text/javascript" src="../js/echarts.js"></script>
+<script type="text/javascript" src="../js/auth.js"></script>
+<script>
+	layui.config({
+	    base: '../plugins/layui/modules/'
+	});
+	
+	layui.use(['layer', 'form', 'http', 'common','laydate','table'], function () {
+	    var layer = layui.layer,
+	        http = layui.http,
+	        form = layui.form,
+			laydate = layui.laydate,
+	        common = layui.common;
+			
+			http.get('admin/count/countProfit', {}, function (res) {
+			    if (res.code == 200) {
+			        console.log(res);
+					var data= res.data;
+					$(".nowadaysSales").html('￥' + (data.nowadaysSales ? (data.nowadaysSales).toFixed(2) : '0.00'));
+					$(".totalSales").html('￥' + (data.totalSales ? (data.totalSales).toFixed(2):'0.00'));
+					
+					var datalist = [];
+					datalist.push({value:getFormatPrice(data.shareAward),name:'分享奖'})
+					datalist.push({value:getFormatPrice(data.indirectAward),name:'间接奖'})
+					datalist.push({value:getFormatPrice(data.repeatAward),name:'复购奖'})
+					datalist.push({value:getFormatPrice(data.awardPool),name:'奖金池'})
+					datalist.push({value:getFormatPrice(data.profit),name:'盈利'})
+					option.series[0].data = datalist;
+					myChart.setOption(option);
+			    }
+			});
+			
+			var myChart = echarts.init(document.getElementById('mainShow'));
+			option = {
+				title : {
+					text: '盈利情况统计',
+					subtext: '金额及所占比例',
+					x:'center'
+				},
+				tooltip : {
+					trigger: 'item',
+					formatter: "{a} <br/>{b} : {c} ({d}%)"
+				},
+				legend: {
+					orient: 'vertical',
+					left: 'left',
+					data: ['分享奖','间接奖','复购奖','奖金池','盈利']
+				},
+				series : [
+					{
+						name: '金额及所占比例',
+						type: 'pie',
+						radius : '55%',
+						center: ['50%', '60%'],
+						data:[],
+						itemStyle: {
+							emphasis: {
+								shadowBlur: 10,
+								shadowOffsetX: 0,
+								shadowColor: 'rgba(0, 0, 0, 0.5)'
+							}
+						}
+					}
+				]
+			};
+			myChart.setOption(option);
+			
+    })
+</script>
+</body>
+
+</html>
