@@ -8,7 +8,8 @@ export default new Vuex.Store({
     pageList: '',
     receiveAddressId: '',//存储下单时的收货地址id
 
-    productId: '',
+    productId: '', // 未登录分享产品id
+    shareUserId: 0, // 分享人id
   },
   mutations: {
     /**
@@ -23,6 +24,9 @@ export default new Vuex.Store({
     },
     onProductId (state, value) {
       state.productId = value
+    },
+    onShareUserId (state, value) {
+      state.shareUserId = value
     },
   },
   actions: {

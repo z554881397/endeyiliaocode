@@ -163,12 +163,19 @@ export default {
       }, // 选择的商品详情
 
       show: false, // 规格弹出层
+      shareUserId: '', // 分享人id
     };
   },
   created() {
     var token = localStorage.getItem('ende-ecology-toke')
     if(!token){
       this.loginFlag = false
+    }else{
+      this.shareUserId = commonUtil.parseUrlParams('shareUserId')
+      if(this.$store.state.shareUserId == 0){
+        this.onBind()
+        
+      }
     }
     this.$store.commit("onProductId", '');
     this.id = this.$route.query.id;
@@ -176,9 +183,22 @@ export default {
     this.findProductInfo(this.id);
   },
   mounted() {
-    wxapi.wxRegister(this.wxRegCallback)
+
   },
   methods: {
+    onBind() {//绑定上级关系
+      var _this = this
+      api.bindParent({
+        parentUserId: this.shareUserId
+      }).then(res => {
+        if(res.code == 200){
+          // console.log('绑定上级成功')
+          _this.$store.commit("onShareUserId", _this.$store.state.shareUserId++);
+        }else {
+          this.$toast(res.msg)
+        }
+      })
+    },
     onPShow() {
       // 弹出选择规格
       this.show = true;
@@ -219,6 +239,12 @@ export default {
     },
     findProductInfo(productId) {
       //查询商品详情
+      
+      this.$toast.loading({
+        message: '加载中...',
+        forbidClick: true,
+        duration: 0,
+      })
       api.findProductInfo({
         productId: productId
       }).then(res => {
@@ -238,6 +264,9 @@ export default {
           if(smallPic){
             this.detail.smallPic = smallPic.split(',');
           }
+          this.$toast.clear()
+          wxapi.wxRegister(this.wxRegCallback)
+
           //开始处理商品信息,将后台返回的商品good数组转化为需要的数据
           let goodVoList = productInfo.goodVoList;
           if(goodVoList){
@@ -289,7 +318,7 @@ export default {
       let option = {
         title: this.detail.name, // 分享标题, 请自行替换
         desc: "售价：¥"+this.detail.price+"。恩德商城，正品保证，好物与你分享", // 分享描述, 请自行替换
-        link: 'http://shengtai.ende168.com/?shareUserId='+shareUserId+'#/productDetail?id='+this.id, // 分享链接，根据自身项目决定是否需要split
+        link: this.$config.myIp + '?shareUserId='+shareUserId+'#/productDetail?id='+this.id, // 分享链接，根据自身项目决定是否需要split
         imgUrl: this.detail.smallPic[0], // 分享图标, 请自行替换，需要绝对路径
         success: () => {
           alert('分享成功')
@@ -304,7 +333,7 @@ export default {
     onLogin() {
       //登录
       var shareUserId = commonUtil.parseUrlParams('shareUserId')
-      window.location.href = 'http://shengtai.ende168.com/?shareUserId='+shareUserId+'&productId='+this.id+'#/login'
+      window.location.href = this.$config.myIp + '?shareUserId='+shareUserId+'&productId='+this.id+'#/login'
     }
   }
 };

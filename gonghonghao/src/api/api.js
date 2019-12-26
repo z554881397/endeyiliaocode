@@ -81,4 +81,7 @@ export default {
     //申请
     applyAdd:{ url: 'app/partner/apply/recode/add', method: 'post', file: ''},
 
+    //绑定上级关系
+    bindParent: { url: 'app/user/bindParent', method: 'post', file: ''},
+
 }

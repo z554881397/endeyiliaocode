@@ -1,10 +1,10 @@
 
 import $ from 'jquery';
 import app from '../main.js'
-import url from './config.js'
+import config from './config.js'
 import commonUtil from '@/assets/js/commonUtil.js';
 
-var TUrl = url.url
+var TUrl = config.url
 
 const generateApiMap = (map) => {
     let facade = {}
@@ -48,7 +48,7 @@ const sendApiInstance = (method, url, file, params) => {
                     
                     var shareUserId = commonUtil.parseUrlParams('shareUserId')
                     var productId = commonUtil.parseUrlParams('productId')
-                    window.location.href = 'http://shengtai.ende168.com/?shareUserId='+shareUserId+'&productId='+productId+'#/login'
+                    window.location.href = config.myIp + '?shareUserId='+shareUserId+'&productId='+productId+'#/login'
                 } else {
                     return res
                 }
@@ -84,7 +84,7 @@ const sendApiInstance = (method, url, file, params) => {
                     
                     var shareUserId = commonUtil.parseUrlParams('shareUserId')
                     var productId = commonUtil.parseUrlParams('productId')
-                    window.location.href = 'http://shengtai.ende168.com/?shareUserId='+shareUserId+'&productId='+productId+'#/login'
+                    window.location.href = config.myIp + '?shareUserId='+shareUserId+'&productId='+productId+'#/login'
                 } else {
                     return res
                 }
@@ -119,7 +119,7 @@ const sendApiInstance = (method, url, file, params) => {
                     
                     var shareUserId = commonUtil.parseUrlParams('shareUserId')
                     var productId = commonUtil.parseUrlParams('productId')
-                    window.location.href = 'http://shengtai.ende168.com/?shareUserId='+shareUserId+'&productId='+productId+'#/login'
+                    window.location.href = config.myIp + '?shareUserId='+shareUserId+'&productId='+productId+'#/login'
 
                 } else {
                     return res
@@ -143,7 +143,7 @@ const sendApiInstance = (method, url, file, params) => {
 function checkLoginStatus() {
     let token = localStorage.getItem("ende-ecology-toke");
     let freshTime = localStorage.getItem("ende-ecology-freshTime");
-    if (token && new Date().getTime() - freshTime > url.LOGIN_TIMEOUT/2 * 24 * 60 * 60 * 1000 && new Date().getTime() - freshTime < url.LOGIN_TIMEOUT * 24 * 60 * 60 * 1000) {
+    if (token && new Date().getTime() - freshTime > config.LOGIN_TIMEOUT/2 * 24 * 60 * 60 * 1000 && new Date().getTime() - freshTime < config.LOGIN_TIMEOUT * 24 * 60 * 60 * 1000) {
         $.post(TUrl + 'app/user/token/refresh',function (res) {
             if(res.code == 200){
                 //用户已经是系统用户了

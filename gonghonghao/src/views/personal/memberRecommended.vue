@@ -18,7 +18,7 @@
     >
     <div class="member-recommended-content" v-for="dataList in list" :key="dataList.id">
       <div class="member-recommended-item">
-        <van-cell label="2019-10-31">
+        <van-cell :label="dataList.bindTime?dataList.bindTime.split(' ')[0]:''">
           <div slot="title" class="member-recommended-item-title">
             <div>{{dataList.name ? dataList.name:dataList.account|deName}}</div>
             <div>{{dataList.account|phoneFilter}}</div>

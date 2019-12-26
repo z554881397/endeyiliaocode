@@ -282,8 +282,8 @@ export default {
       let option = {
         title: "恩德商城", // 分享标题, 请自行替换
         desc: "恩德商城，正品保证，好物与你分享", // 分享描述, 请自行替换
-        link: 'http://shengtai.ende168.com/?shareUserId='+this.id+'#/home', // 分享链接，根据自身项目决定是否需要split
-        imgUrl: 'http://shengtai.ende168.com/img/logo.png', // 分享图标, 请自行替换，需要绝对路径
+        link: this.$config.myIp + '?shareUserId='+this.id+'#/home', // 分享链接，根据自身项目决定是否需要split
+        imgUrl: this.$config.myIp + 'img/logo.png', // 分享图标, 请自行替换，需要绝对路径
         success: () => {
           alert('分享成功')
         },
@@ -416,7 +416,7 @@ export default {
       setTimeout(function() {
         var shareUserId = commonUtil.parseUrlParams('shareUserId')
         var productId = commonUtil.parseUrlParams('productId')
-        window.location.href = 'http://shengtai.ende168.com/?shareUserId='+shareUserId+'&productId='+productId+'#/login'
+        window.location.href = _this.$config.myIp + '?shareUserId='+shareUserId+'&productId='+productId+'#/login'
       }, 1000);
     },
     onLogin() {
@@ -424,9 +424,8 @@ export default {
       var _this = this
       setTimeout(function() {
         var shareUserId = commonUtil.parseUrlParams('shareUserId')
-        window.location.href = 'http://shengtai.ende168.com/?shareUserId='+shareUserId+'#/login'
         var productId = commonUtil.parseUrlParams('productId')
-        window.location.href = 'http://shengtai.ende168.com/?shareUserId='+shareUserId+'&productId='+productId+'#/login'
+        window.location.href = _this.$config.myIp + '?shareUserId='+shareUserId+'&productId='+productId+'#/login'
       }, 500);
 
     }

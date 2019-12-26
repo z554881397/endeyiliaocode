@@ -14,6 +14,9 @@ import mui from '@/assets/js/mui.js'
 // 挂载到VUE实例上
 Vue.prototype.$mui = mui
 
+import config from './api/config.js'
+Vue.prototype.$config = config
+
 import waterfall from 'vue-waterfall2'
 Vue.use(waterfall)
 
